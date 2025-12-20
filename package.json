@@ -1,0 +1,9 @@
+{
+  "name": "kali-domain-bot",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "whoiser": "^1.13.0"
+  }
+}
