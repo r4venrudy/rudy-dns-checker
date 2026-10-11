@@ -8,7 +8,7 @@
 
 <p align="center"><strong>Domain records and mail-policy signals in one command.</strong></p>
 
-<p align="center"><a href="#overview">Overview</a> · <a href="#capabilities">Capabilities</a> · <a href="#quick-start">Quick start</a> · <a href="#implementation-notes">Implementation notes</a></p>
+<p align="center"><a href="#overview">Overview</a> · <a href="#capabilities">Capabilities</a> · <a href="#email-security-spf--dmarc">Mail policy</a> · <a href="#quick-start">Quick start</a> · <a href="#implementation-notes">Implementation notes</a></p>
 
 ---
 
@@ -25,30 +25,48 @@ A Discord `/domain` bot that resolves public DNS records, queries WHOIS and summ
 | WHOIS | Registrar and date fields where the provider response matches the expected shape |
 | Discord | Registers `/domain` globally and returns a structured embed |
 
+## Email Security (SPF / DMARC)
+
+- Flags missing or duplicate SPF records
+- Warns on permissive +all / ?all and softfail ~all
+- Reads the DMARC policy from _dmarc.<domain> (none / quarantine / reject)
+
+These are record summaries, not a complete SPF evaluation. Missing or unrecognized DMARC policy values currently use the same warning as `p=none`; check the raw record before drawing a conclusion. The bot does not test whether a real message passes SPF, DKIM or DMARC.
+
 ## Quick start
 
-Requires Node.js with ES-module and top-level-await support and a Discord application. Keep the bundled `raven.png`; startup verifies its PNG signature.
+Requires **Node.js 24 or newer**, npm and a Discord application. Keep the bundled `raven.png`; startup verifies its PNG signature. Run the commands from the repository root.
 
 ```bash
 git clone https://github.com/r4venrudy/rudy-dns-checker.git
 cd rudy-dns-checker
-npm install
+npm ci
 ```
 
-Create local `config.json`:
+Copy `.env.example` to a local `.env` file, then fill in your bot token and application ID:
 
-```json
-{
-  "token": "YOUR_DISCORD_BOT_TOKEN",
-  "clientId": "YOUR_DISCORD_APPLICATION_ID"
-}
+```dotenv
+DISCORD_TOKEN=YOUR_DISCORD_BOT_TOKEN
+CLIENT_ID=YOUR_DISCORD_APPLICATION_ID
 ```
+
+Keep `.env` private; it is ignored by Git. Node loads it only when you pass `--env-file`. First check the installation without connecting to Discord:
 
 ```bash
-node index.js
+node --env-file=.env index.js --check-config
+```
+
+A successful check prints `Configuration and dependencies ready` and exits. It checks required settings, the application-ID format, installed dependencies and the bundled asset; it does not authenticate the token or validate Discord permissions. After filling in real values, start the bot:
+
+```bash
+node --env-file=.env index.js
 ```
 
 Invite the bot with `bot` and `applications.commands` scopes, then run `/domain example.com`.
+
+Existing local `config.json` files remain supported with `token` and `clientId` keys. Exported environment variables take priority over the JSON values; `RUDY_CONFIG` selects another JSON file. Do not commit either credential file.
+
+For an offline configuration regression check, run `npm test`. No real token or DNS lookup is needed for those tests.
 
 ## Implementation notes
 
@@ -62,7 +80,9 @@ Invite the bot with `bot` and `applications.commands` scopes, then run `/domain 
 ```text
 index.js       DNS, WHOIS, mail-policy checks and Discord command
 package.json   ES-module configuration and dependencies
-config.json    Local Discord credentials
+.env.example   Template for private runtime settings
+config.json    Optional local JSON credentials
+packaging/     Configuration loader and offline tests
 raven.png      Required startup asset
 ```
 
