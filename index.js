@@ -68,6 +68,32 @@ async function safeResolve(domain,type){
     }
 }
 
+function joinTxt(records){
+    return records.map(t=>Array.isArray(t)?t.join(""):t)
+}
+
+// SPF ve DMARC kayıtlarını değerlendirir (e-posta sahteciliğine karşı koruma)
+function gradeEmailSecurity(rootTxt,dmarcTxt){
+    const notes=[]
+    const spf=joinTxt(rootTxt).filter(t=>t.toLowerCase().startsWith("v=spf1"))
+    if(spf.length===0) notes.push("❌ SPF kaydı yok")
+    else if(spf.length>1) notes.push("⚠️ Birden fazla SPF kaydı var (geçersiz)")
+    else if(/[+?]all\b/i.test(spf[0])) notes.push("⚠️ SPF çok gevşek (+all / ?all)")
+    else if(/~all\b/i.test(spf[0])) notes.push("🟡 SPF softfail (~all)")
+    else if(/-all\b/i.test(spf[0])) notes.push("✅ SPF sıkı (-all)")
+    else notes.push("⚠️ SPF bir all mekanizmasıyla bitmiyor")
+
+    const dmarc=joinTxt(dmarcTxt).find(t=>t.toLowerCase().startsWith("v=dmarc1"))
+    if(!dmarc) notes.push("❌ DMARC kaydı yok")
+    else{
+        const policy=(dmarc.match(/;\s*p=(\w+)/i)||[])[1]?.toLowerCase()
+        if(policy==="reject") notes.push("✅ DMARC p=reject")
+        else if(policy==="quarantine") notes.push("🟡 DMARC p=quarantine")
+        else notes.push("⚠️ DMARC p=none (sadece izleme)")
+    }
+    return { spf:spf[0]||null, dmarc:dmarc||null, notes }
+}
+
 client.on("interactionCreate",async interaction=>{
     if(!interaction.isChatInputCommand()) return
     if(interaction.commandName!=="domain") return
@@ -90,6 +116,8 @@ client.on("interactionCreate",async interaction=>{
         safeResolve(domain,"TXT"),
         safeResolve(domain,"CNAME")
     ])
+    const DMARC=await safeResolve(`_dmarc.${domain}`,"TXT")
+    const email=gradeEmailSecurity(TXT,DMARC)
 
     let whoisData=null
     try{
@@ -113,6 +141,7 @@ client.on("interactionCreate",async interaction=>{
             { name:"MX", value:MX.length?`\`\`\`\n${MX.map(x=>x.exchange).join("\n")}\n\`\`\``:"Yok" },
             { name:"TXT", value:TXT.length?`\`\`\`\n${TXT.map(t=>Array.isArray(t)?t.join(" "):t).join("\n")}\n\`\`\``:"Yok" },
             { name:"CNAME", value:CNAME.length?`\`\`\`\n${CNAME.join("\n")}\n\`\`\``:"Yok" },
+            { name:"E-posta Güvenliği (SPF / DMARC)", value:email.notes.join("\n") },
             { name:"Registrar", value:`\`${registrar}\`` },
             { name:"Oluşturulma", value:`\`${created}\``, inline:true },
             { name:"Bitiş", value:`\`${expires}\``, inline:true }
