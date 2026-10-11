@@ -1,152 +1,75 @@
-##################################################
-#        Domain DNS & WHOIS Discord Bot          #
-##################################################
+<p align="center"><img src="docs/banner.svg" alt="Rudy DNS Checker — Domain records and mail-policy signals in one command." width="100%"></p>
 
-Description:
--------------
-This Discord bot provides DNS record lookups and WHOIS information for a given domain name.
-It is designed for reconnaissance, cybersecurity research, and general domain intelligence.
-The bot uses Discord slash commands and responds with a structured embed containing
-all discovered DNS records and registration details.
+<p align="center">
+  <img src="https://img.shields.io/badge/Runtime-Node.js%20/%20Discord-55e0b6?style=flat-square&labelColor=101b28" alt="Node.js / Discord">
+  <img src="https://img.shields.io/badge/Docs-source_reviewed-55e0b6?style=flat-square&labelColor=101b28" alt="Documentation based on source review">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-55e0b6?style=flat-square&labelColor=101b28" alt="MIT license"></a>
+</p>
 
-The bot is lightweight, fast, and uses only official Node.js libraries and APIs.
+<p align="center"><strong>Domain records and mail-policy signals in one command.</strong></p>
 
---------------------------------------------------
+<p align="center"><a href="#overview">Overview</a> · <a href="#capabilities">Capabilities</a> · <a href="#quick-start">Quick start</a> · <a href="#implementation-notes">Implementation notes</a></p>
 
-Features:
----------
-1. DNS Record Lookup
-   - A (IPv4)
-   - AAAA (IPv6)
-   - NS (Name Servers)
-   - MX (Mail Servers)
-   - TXT records
-   - CNAME records
+---
 
-2. WHOIS Information
-   - Registrar
-   - Creation date
-   - Expiration date
+## Overview
 
-3. Email Security (SPF / DMARC)
-   - Flags missing or duplicate SPF records
-   - Warns on permissive +all / ?all and softfail ~all
-   - Reads the DMARC policy from _dmarc.<domain> (none / quarantine / reject)
+A Discord `/domain` bot that resolves public DNS records, queries WHOIS and summarizes SPF/DMARC policy signals in an embed. DNS queries run concurrently and failed lookups are represented by empty results.
 
-4. Discord Slash Command
-   - Uses /domain command
-   - Clean embed-based output
-   - Kali Linux–style terminal header aesthetic
+## Capabilities
 
-5. Error Tolerant
-   - DNS lookup failures do not crash the bot
-   - Missing WHOIS fields are handled safely
-   - Domains with partial data still return results
+| Layer | Implemented behavior |
+| :--- | :--- |
+| DNS | A, AAAA, NS, MX, TXT and CNAME lookups |
+| Mail policy | SPF presence/multiplicity and common `all` qualifiers; DMARC policy summary |
+| WHOIS | Registrar and date fields where the provider response matches the expected shape |
+| Discord | Registers `/domain` globally and returns a structured embed |
 
---------------------------------------------------
+## Quick start
 
-Requirements:
--------------
-- Node.js v18 or newer
-- Discord bot token
-- Discord application Client ID
-- Internet access
+Requires Node.js with ES-module and top-level-await support and a Discord application. Keep the bundled `raven.png`; startup verifies its PNG signature.
 
-Required NPM packages:
-----------------------
-- discord.js
-- @discordjs/rest
-- dns (built-in)
-- whoiser
-- fs (built-in)
+```bash
+git clone https://github.com/r4venrudy/rudy-dns-checker.git
+cd rudy-dns-checker
+npm install
+```
 
---------------------------------------------------
+Create local `config.json`:
 
-Installation:
--------------
-1. Clone or download the bot files.
+```json
+{
+  "token": "YOUR_DISCORD_BOT_TOKEN",
+  "clientId": "YOUR_DISCORD_APPLICATION_ID"
+}
+```
 
-2. Install dependencies:
-   npm install discord.js @discordjs/rest whoiser
+```bash
+node index.js
+```
 
-3. Create a file named `config.json` in the root directory:
+Invite the bot with `bot` and `applications.commands` scopes, then run `/domain example.com`.
 
-   {
-       "token": "YOUR_DISCORD_BOT_TOKEN",
-       "clientId": "YOUR_DISCORD_APPLICATION_ID"
-   }
+## Implementation notes
 
-4. Start the bot:
-   node index.js
+- The actual slash command is `/domain`; this is a domain/DNS bot rather than an IP lookup bot.
+- SPF and DMARC checks are lightweight string heuristics. They do not recursively evaluate SPF includes, check DKIM, verify DNSSEC or certify mail delivery.
+- WHOIS response shape varies; registrar and date fields can be unavailable. Large DNS answers can exceed Discord embed limits.
+- Run from the repository root because configuration and asset paths use the working directory. Replies are channel-visible; API availability and Discord setup require live validation.
 
---------------------------------------------------
+## Project map
 
-Usage:
-------
-1. Invite the bot to your Discord server with the appropriate permissions.
+```text
+index.js       DNS, WHOIS, mail-policy checks and Discord command
+package.json   ES-module configuration and dependencies
+config.json    Local Discord credentials
+raven.png      Required startup asset
+```
 
-2. Use the slash command:
-/domain domain:example.com
+## License
 
-3. The bot will respond with:
-   - IPv4 and IPv6 addresses
-   - Name servers
-   - Mail servers
-   - TXT records
-   - CNAME records
-   - Domain registrar
-   - Creation date
-   - Expiration date
+[MIT](LICENSE). Preserve the attribution in the license file.
 
-4. If a DNS record does not exist, it will be displayed as:
-   "Yok" (None)
+---
 
---------------------------------------------------
-
-Output Format:
---------------
-- Results are displayed in a Discord embed.
-- DNS records are shown inside code blocks for readability.
-- WHOIS dates and registrar are formatted inline.
-- The embed title mimics a Kali Linux terminal prompt.
-- Footer indicates the lookup type (DNS / WHOIS).
-
---------------------------------------------------
-
-Error Handling:
----------------
-- DNS resolution errors are caught and ignored per record type.
-- WHOIS lookup failures return "Bilinmiyor" (Unknown).
-- The bot will never crash due to a single failed lookup.
-
---------------------------------------------------
-
-Security Notes:
----------------
-- This bot performs passive lookups only.
-- No scanning, brute forcing, or intrusive actions are performed.
-- Use responsibly and comply with local laws and API terms.
-
---------------------------------------------------
-
-Customization:
---------------
-You can easily extend this bot by:
-- Adding more DNS record types (SRV, SOA, etc.)
-- Adding IP reputation APIs
-- Logging queries to a database
-- Adding cooldowns or permission checks
-
---------------------------------------------------
-
-Author:
--------
-Created for domain intelligence, DNS inspection, and cybersecurity research.
-
---------------------------------------------------
-
-License:
---------
-Provided as-is.
-Use responsibly.
-Not intended for malicious activity.
+<p align="center">Part of the <a href="https://github.com/r4venrudy">r4venrudy</a> project collection.</p>
