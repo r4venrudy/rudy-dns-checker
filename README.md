@@ -1,7 +1,7 @@
 <p align="center"><img src="docs/banner.svg" alt="Rudy DNS Checker — Domain records and mail-policy signals in one command." width="100%"></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Runtime-Node.js%20/%20Discord-55e0b6?style=flat-square&labelColor=101b28" alt="Node.js / Discord">
+  <img src="https://img.shields.io/badge/Runtime-Node.js%20%2F%20Discord-55e0b6?style=flat-square&labelColor=101b28" alt="Node.js / Discord">
   <img src="https://img.shields.io/badge/Docs-source_reviewed-55e0b6?style=flat-square&labelColor=101b28" alt="Documentation based on source review">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-55e0b6?style=flat-square&labelColor=101b28" alt="MIT license"></a>
 </p>
