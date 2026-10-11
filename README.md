@@ -28,12 +28,17 @@ Features:
    - Creation date
    - Expiration date
 
-3. Discord Slash Command
+3. Email Security (SPF / DMARC)
+   - Flags missing or duplicate SPF records
+   - Warns on permissive +all / ?all and softfail ~all
+   - Reads the DMARC policy from _dmarc.<domain> (none / quarantine / reject)
+
+4. Discord Slash Command
    - Uses /domain command
    - Clean embed-based output
    - Kali Linux–style terminal header aesthetic
 
-4. Error Tolerant
+5. Error Tolerant
    - DNS lookup failures do not crash the bot
    - Missing WHOIS fields are handled safely
    - Domains with partial data still return results
