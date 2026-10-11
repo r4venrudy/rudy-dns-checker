@@ -31,7 +31,9 @@ try{
     ravenFail()
 }
 
-const config = JSON.parse(fs.readFileSync("./config.json","utf8"))
+import runtimeConfig from './packaging/config.cjs'
+const config = runtimeConfig.loadConfig({ token: 'DISCORD_TOKEN', clientId: 'CLIENT_ID' })
+if (process.argv.includes('--check-config')) { console.log('Configuration and dependencies ready'); process.exit(0) }
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds]
