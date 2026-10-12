@@ -29,6 +29,9 @@ function gradeEmailSecurity(rootTxt,dmarcTxt){
         if(policy==="reject") notes.push("✅ DMARC p=reject")
         else if(policy==="quarantine") notes.push("🟡 DMARC p=quarantine")
         else notes.push("⚠️ DMARC p=none (sadece izleme)")
+        const pct=(dmarc.match(/;\s*pct=(\d+)/i)||[])[1]
+        if(pct && Number(pct)<100) notes.push(`🟡 DMARC politikası e-postaların sadece %${pct}'ine uygulanıyor`)
+        if(!/;\s*rua=/i.test(dmarc)) notes.push("ℹ️ DMARC rapor adresi (rua) yok")
     }
     return { spf:spf[0]||null, dmarc:dmarc||null, notes }
 }

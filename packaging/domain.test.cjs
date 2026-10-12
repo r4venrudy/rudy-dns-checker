@@ -13,7 +13,7 @@ test('normalizeDomain rejects non-hostnames', () => {
 })
 
 test('strict SPF and DMARC reject', () => {
-  const r = gradeEmailSecurity([['v=spf1 include:_spf.google.com -all']], [['v=DMARC1; p=reject']])
+  const r = gradeEmailSecurity([['v=spf1 include:_spf.google.com -all']], [['v=DMARC1; p=reject; rua=mailto:d@example.com']])
   assert.deepStrictEqual(r.notes, ['✅ SPF sıkı (-all)', '✅ DMARC p=reject'])
 })
 
@@ -30,4 +30,9 @@ test('SPF split across TXT strings is joined', () => {
 
 test('SPF redirect is not reported as missing an all mechanism', () => {
   assert.strictEqual(gradeEmailSecurity([['v=spf1 redirect=_spf.example.net']], []).notes[0], '↪️ SPF _spf.example.net adresine yönlendiriliyor')
+})
+
+test('DMARC partial pct and missing rua are reported', () => {
+  const notes = gradeEmailSecurity([['v=spf1 -all']], [['v=DMARC1; p=quarantine; pct=25']]).notes
+  assert.deepStrictEqual(notes.slice(1), ["🟡 DMARC p=quarantine", "🟡 DMARC politikası e-postaların sadece %25'ine uygulanıyor", 'ℹ️ DMARC rapor adresi (rua) yok'])
 })
