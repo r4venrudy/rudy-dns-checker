@@ -32,6 +32,7 @@ try{
 }
 
 import runtimeConfig from './packaging/config.cjs'
+import whoisHelpers from './packaging/whois-summary.cjs'
 const config = runtimeConfig.loadConfig({ token: 'DISCORD_TOKEN', clientId: 'CLIENT_ID' })
 if (process.argv.includes('--check-config')) { console.log('Configuration and dependencies ready'); process.exit(0) }
 
@@ -128,9 +129,10 @@ client.on("interactionCreate",async interaction=>{
         whoisData=null
     }
 
-    const registrar=whoisData?.registrar || "Bilinmiyor"
-    const created=whoisData?.creationDate || "Bilinmiyor"
-    const expires=whoisData?.expirationDate || "Bilinmiyor"
+    const summary=whoisHelpers.whoisSummary(whoisData)
+    const registrar=summary.registrar || "Bilinmiyor"
+    const created=summary.created || "Bilinmiyor"
+    const expires=summary.expires || "Bilinmiyor"
 
     const embed=new EmbedBuilder()
         .setColor(0x00ffea)
