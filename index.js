@@ -98,24 +98,20 @@ client.on("interactionCreate",async interaction=>{
         NS,
         MX,
         TXT,
-        CNAME
+        CNAME,
+        DMARC,
+        whoisData
     ] = await Promise.all([
         safeResolve(domain,"A"),
         safeResolve(domain,"AAAA"),
         safeResolve(domain,"NS"),
         safeResolve(domain,"MX"),
         safeResolve(domain,"TXT"),
-        safeResolve(domain,"CNAME")
+        safeResolve(domain,"CNAME"),
+        safeResolve(`_dmarc.${domain}`,"TXT"),
+        whoiser(domain,{ timeout:10000 }).catch(()=>null)
     ])
-    const DMARC=await safeResolve(`_dmarc.${domain}`,"TXT")
     const email=gradeEmailSecurity(TXT,DMARC)
-
-    let whoisData=null
-    try{
-        whoisData=await whoiser(domain)
-    }catch{
-        whoisData=null
-    }
 
     const summary=whoisHelpers.whoisSummary(whoisData)
     const registrar=summary.registrar || "Bilinmiyor"
