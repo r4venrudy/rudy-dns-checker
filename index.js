@@ -99,6 +99,7 @@ client.on("interactionCreate",async interaction=>{
         MX,
         TXT,
         CNAME,
+        CAA,
         DMARC,
         whoisData
     ] = await Promise.all([
@@ -108,6 +109,7 @@ client.on("interactionCreate",async interaction=>{
         safeResolve(domain,"MX"),
         safeResolve(domain,"TXT"),
         safeResolve(domain,"CNAME"),
+        safeResolve(domain,"CAA"),
         safeResolve(`_dmarc.${domain}`,"TXT"),
         whoiser(domain,{ timeout:10000 }).catch(()=>null)
     ])
@@ -132,6 +134,7 @@ client.on("interactionCreate",async interaction=>{
             { name:"MX", value:codeBlock([...MX].sort((a,b)=>a.priority-b.priority).map(x=>`${x.priority} ${x.exchange}`)) },
             { name:"TXT", value:codeBlock(joinTxt(TXT)) },
             { name:"CNAME", value:codeBlock(CNAME) },
+            { name:"CAA", value:codeBlock(CAA.map(r=>`${r.critical?"!":""}${Object.entries(r).filter(([k])=>k!=="critical").map(([k,v])=>`${k} ${v}`).join(" ")}`)) },
             { name:"E-posta Güvenliği (SPF / DMARC)", value:email.notes.join("\n") },
             { name:"Registrar", value:`\`${registrar}\`` },
             { name:"Oluşturulma", value:`\`${created}\``, inline:true },
