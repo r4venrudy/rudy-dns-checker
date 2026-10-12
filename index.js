@@ -70,6 +70,14 @@ function normalizeDomain(input){
     return /^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(d) ? d : null
 }
 
+// Discord rejects embed field values over 1024 characters (long TXT/SPF records hit this)
+function codeBlock(lines){
+    if(!lines.length) return "Yok"
+    let body=lines.join("\n")
+    if(body.length>1000) body=body.slice(0,999)+"…"
+    return `\`\`\`\n${body}\n\`\`\``
+}
+
 async function safeResolve(domain,type){
     try{
         return await dns.resolve(domain,type)
@@ -150,12 +158,12 @@ client.on("interactionCreate",async interaction=>{
         .setTitle(`┌──(root㉿kali)-[~]\n└─$ domain ${domain}`)
         .setDescription("Aşağıda hedef domain için bulunan açık DNS ve WHOIS verileri yer almaktadır.")
         .addFields(
-            { name:"IPv4", value:A.length?`\`\`\`\n${A.join("\n")}\n\`\`\``:"Yok" },
-            { name:"IPv6", value:AAAA.length?`\`\`\`\n${AAAA.join("\n")}\n\`\`\``:"Yok" },
-            { name:"NS", value:NS.length?`\`\`\`\n${NS.join("\n")}\n\`\`\``:"Yok" },
-            { name:"MX", value:MX.length?`\`\`\`\n${MX.map(x=>x.exchange).join("\n")}\n\`\`\``:"Yok" },
-            { name:"TXT", value:TXT.length?`\`\`\`\n${TXT.map(t=>Array.isArray(t)?t.join(" "):t).join("\n")}\n\`\`\``:"Yok" },
-            { name:"CNAME", value:CNAME.length?`\`\`\`\n${CNAME.join("\n")}\n\`\`\``:"Yok" },
+            { name:"IPv4", value:codeBlock(A) },
+            { name:"IPv6", value:codeBlock(AAAA) },
+            { name:"NS", value:codeBlock(NS) },
+            { name:"MX", value:codeBlock(MX.map(x=>x.exchange)) },
+            { name:"TXT", value:codeBlock(joinTxt(TXT)) },
+            { name:"CNAME", value:codeBlock(CNAME) },
             { name:"E-posta Güvenliği (SPF / DMARC)", value:email.notes.join("\n") },
             { name:"Registrar", value:`\`${registrar}\`` },
             { name:"Oluşturulma", value:`\`${created}\``, inline:true },
