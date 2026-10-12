@@ -63,6 +63,13 @@ client.once("ready", () => {
     console.log(`Bot aktif: ${client.user.tag}`)
 })
 
+// "https://Example.com/path" -> "example.com"; returns null for anything that isn't a hostname
+function normalizeDomain(input){
+    const d=String(input||"").trim().toLowerCase()
+        .replace(/^[a-z]+:\/\//,"").split(/[/?#]/)[0].replace(/:\d+$/,"").replace(/\.$/,"")
+    return /^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(d) ? d : null
+}
+
 async function safeResolve(domain,type){
     try{
         return await dns.resolve(domain,type)
@@ -101,7 +108,11 @@ client.on("interactionCreate",async interaction=>{
     if(!interaction.isChatInputCommand()) return
     if(interaction.commandName!=="domain") return
 
-    const domain=interaction.options.getString("domain")
+    const domain=normalizeDomain(interaction.options.getString("domain"))
+    if(!domain){
+        await interaction.reply({ content:"❌ Geçerli bir domain girin (örnek: example.com)", ephemeral:true })
+        return
+    }
     await interaction.deferReply()
 
     const [
