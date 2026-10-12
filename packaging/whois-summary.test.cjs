@@ -17,3 +17,18 @@ test('takes the first non-empty value across WHOIS servers', () => {
 test('missing results give nulls', () => {
   assert.deepStrictEqual(whoisSummary(null), { registrar: null, created: null, expires: null });
 });
+
+const { formatDate, daysUntil } = require('./whois-summary.cjs');
+
+test('formatDate shortens ISO timestamps and keeps unknown formats', () => {
+  assert.strictEqual(formatDate('2026-10-09T18:20:50Z'), '2026-10-09');
+  assert.strictEqual(formatDate('before Aug-1996'), 'before Aug-1996');
+  assert.strictEqual(formatDate(null), null);
+});
+
+test('daysUntil counts whole days and handles bad input', () => {
+  const now = new Date('2026-10-01T00:00:00Z');
+  assert.strictEqual(daysUntil('2026-10-11T00:00:00Z', now), 10);
+  assert.strictEqual(daysUntil('2026-09-30T00:00:00Z', now), -1);
+  assert.strictEqual(daysUntil('garbage', now), null);
+});
