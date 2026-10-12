@@ -10,6 +10,18 @@ function pick(results, key) {
   return null;
 }
 
+// "2026-10-09T18:20:50Z" -> "2026-10-09"; leaves unparseable registry formats as they are
+function formatDate(value) {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? value : d.toISOString().slice(0, 10);
+}
+
+function daysUntil(value, now = new Date()) {
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : Math.floor((d - now) / 86400000);
+}
+
 function whoisSummary(results) {
   return {
     registrar: pick(results, 'Registrar'),
@@ -18,4 +30,4 @@ function whoisSummary(results) {
   };
 }
 
-module.exports = { whoisSummary };
+module.exports = { whoisSummary, formatDate, daysUntil };
