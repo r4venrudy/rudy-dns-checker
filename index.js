@@ -56,10 +56,15 @@ const commands = [
 
 const rest = new REST({ version: "10" }).setToken(config.token)
 
-await rest.put(
-    Routes.applicationCommands(config.clientId),
-    { body: commands }
-)
+try{
+    await rest.put(
+        Routes.applicationCommands(config.clientId),
+        { body: commands }
+    )
+}catch(err){
+    console.error(`Slash komutları kaydedilemedi (token / CLIENT_ID doğru mu?): ${err.message}`)
+    process.exit(1)
+}
 
 client.once("ready", () => {
     console.log(`Bot aktif: ${client.user.tag}`)
