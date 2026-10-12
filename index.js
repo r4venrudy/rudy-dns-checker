@@ -161,7 +161,7 @@ client.on("interactionCreate",async interaction=>{
             { name:"IPv4", value:codeBlock(A) },
             { name:"IPv6", value:codeBlock(AAAA) },
             { name:"NS", value:codeBlock(NS) },
-            { name:"MX", value:codeBlock(MX.map(x=>x.exchange)) },
+            { name:"MX", value:codeBlock([...MX].sort((a,b)=>a.priority-b.priority).map(x=>`${x.priority} ${x.exchange}`)) },
             { name:"TXT", value:codeBlock(joinTxt(TXT)) },
             { name:"CNAME", value:codeBlock(CNAME) },
             { name:"E-posta Güvenliği (SPF / DMARC)", value:email.notes.join("\n") },
