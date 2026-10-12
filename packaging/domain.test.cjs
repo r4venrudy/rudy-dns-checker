@@ -36,3 +36,13 @@ test('DMARC partial pct and missing rua are reported', () => {
   const notes = gradeEmailSecurity([['v=spf1 -all']], [['v=DMARC1; p=quarantine; pct=25']]).notes
   assert.deepStrictEqual(notes.slice(1), ["🟡 DMARC p=quarantine", "🟡 DMARC politikası e-postaların sadece %25'ine uygulanıyor", 'ℹ️ DMARC rapor adresi (rua) yok'])
 })
+
+const { codeBlock } = require('./domain.cjs')
+
+test('codeBlock wraps records and stays under the field limit', () => {
+  assert.strictEqual(codeBlock([]), 'Yok')
+  assert.strictEqual(codeBlock(['1.2.3.4', '5.6.7.8']), '```\n1.2.3.4\n5.6.7.8\n```')
+  const big = codeBlock(Array.from({ length: 200 }, (_, i) => `v=verify-${i}-${'x'.repeat(20)}`))
+  assert.ok(big.length <= 1024)
+  assert.ok(big.includes('…'))
+})
