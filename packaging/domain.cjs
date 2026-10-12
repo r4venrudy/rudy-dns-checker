@@ -19,6 +19,7 @@ function gradeEmailSecurity(rootTxt,dmarcTxt){
     else if(/[+?]all\b/i.test(spf[0])) notes.push("⚠️ SPF çok gevşek (+all / ?all)")
     else if(/~all\b/i.test(spf[0])) notes.push("🟡 SPF softfail (~all)")
     else if(/-all\b/i.test(spf[0])) notes.push("✅ SPF sıkı (-all)")
+    else if(/\bredirect=\S+/i.test(spf[0])) notes.push(`↪️ SPF ${spf[0].match(/redirect=(\S+)/i)[1]} adresine yönlendiriliyor`)
     else notes.push("⚠️ SPF bir all mekanizmasıyla bitmiyor")
 
     const dmarc=joinTxt(dmarcTxt).find(t=>t.toLowerCase().startsWith("v=dmarc1"))

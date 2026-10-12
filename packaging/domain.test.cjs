@@ -27,3 +27,7 @@ test('SPF split across TXT strings is joined', () => {
   const r = gradeEmailSecurity([['v=spf1 include:a.example ', '-all']], [])
   assert.strictEqual(r.spf, 'v=spf1 include:a.example -all')
 })
+
+test('SPF redirect is not reported as missing an all mechanism', () => {
+  assert.strictEqual(gradeEmailSecurity([['v=spf1 redirect=_spf.example.net']], []).notes[0], '↪️ SPF _spf.example.net adresine yönlendiriliyor')
+})
