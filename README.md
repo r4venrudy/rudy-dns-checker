@@ -20,16 +20,18 @@ A Discord `/domain` bot that resolves public DNS records, queries WHOIS and summ
 
 | Layer | Implemented behavior |
 | :--- | :--- |
-| DNS | A, AAAA, NS, MX, TXT and CNAME lookups |
+| DNS | A, AAAA, NS, MX (sorted by priority), TXT, CNAME and CAA lookups |
 | Mail policy | SPF presence/multiplicity and common `all` qualifiers; DMARC policy summary |
-| WHOIS | Registrar and date fields where the provider response matches the expected shape |
-| Discord | Registers `/domain` globally and returns a structured embed |
+| WHOIS | Registrar, creation and expiry dates (first non-empty value across WHOIS servers, 10 s timeout); warns when a domain expires within 30 days |
+| Discord | Registers `/domain` globally and returns a structured embed; accepts pasted URLs (`https://example.com/path` becomes `example.com`) |
 
 ## Email Security (SPF / DMARC)
 
 - Flags missing or duplicate SPF records
 - Warns on permissive +all / ?all and softfail ~all
+- Recognizes `redirect=` delegation instead of warning about a missing `all`
 - Reads the DMARC policy from _dmarc.<domain> (none / quarantine / reject)
+- Warns when DMARC `pct` is below 100 and when no `rua` reporting address is set
 
 These are record summaries, not a complete SPF evaluation. Missing or unrecognized DMARC policy values currently use the same warning as `p=none`; check the raw record before drawing a conclusion. The bot does not test whether a real message passes SPF, DKIM or DMARC.
 
