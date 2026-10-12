@@ -84,6 +84,7 @@ client.on("interactionCreate",async interaction=>{
     }
     await interaction.deferReply()
 
+    try{
     const [
         A,
         AAAA,
@@ -135,6 +136,10 @@ client.on("interactionCreate",async interaction=>{
         .setFooter({ text:"Kali Linux | DNS / WHOIS Lookup" })
 
     await interaction.editReply({ embeds:[embed] })
+    }catch(err){
+        console.error(`/domain ${domain} failed:`,err)
+        await interaction.editReply("❌ Sorgu sırasında bir hata oluştu, lütfen tekrar deneyin.").catch(()=>{})
+    }
 })
 
 client.login(config.token)
