@@ -36,4 +36,13 @@ function gradeEmailSecurity(rootTxt,dmarcTxt){
     return { spf:spf[0]||null, dmarc:dmarc||null, notes }
 }
 
-module.exports = { normalizeDomain, joinTxt, gradeEmailSecurity }
+
+// Discord rejects embed field values over 1024 characters (long TXT/SPF records hit this)
+function codeBlock(lines){
+    if(!lines.length) return "Yok"
+    let body=lines.join("\n")
+    if(body.length>1000) body=body.slice(0,999)+"…"
+    return `\`\`\`\n${body}\n\`\`\``
+}
+
+module.exports = { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock }

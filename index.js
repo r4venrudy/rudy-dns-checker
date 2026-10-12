@@ -34,7 +34,7 @@ try{
 import runtimeConfig from './packaging/config.cjs'
 import whoisHelpers from './packaging/whois-summary.cjs'
 import domainHelpers from './packaging/domain.cjs'
-const { normalizeDomain, joinTxt, gradeEmailSecurity } = domainHelpers
+const { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock } = domainHelpers
 const config = runtimeConfig.loadConfig({ token: 'DISCORD_TOKEN', clientId: 'CLIENT_ID' })
 if (process.argv.includes('--check-config')) { console.log('Configuration and dependencies ready'); process.exit(0) }
 
@@ -64,14 +64,6 @@ await rest.put(
 client.once("ready", () => {
     console.log(`Bot aktif: ${client.user.tag}`)
 })
-
-// Discord rejects embed field values over 1024 characters (long TXT/SPF records hit this)
-function codeBlock(lines){
-    if(!lines.length) return "Yok"
-    let body=lines.join("\n")
-    if(body.length>1000) body=body.slice(0,999)+"…"
-    return `\`\`\`\n${body}\n\`\`\``
-}
 
 async function safeResolve(domain,type){
     try{
