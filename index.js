@@ -34,7 +34,7 @@ try{
 import runtimeConfig from './packaging/config.cjs'
 import whoisHelpers from './packaging/whois-summary.cjs'
 import domainHelpers from './packaging/domain.cjs'
-const { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields } = domainHelpers
+const { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx } = domainHelpers
 const config = runtimeConfig.loadConfig({ token: 'DISCORD_TOKEN', clientId: 'CLIENT_ID' })
 if (process.argv.includes('--check-config')) { console.log('Configuration and dependencies ready'); process.exit(0) }
 
@@ -129,7 +129,7 @@ client.on("interactionCreate",async interaction=>{
             { name:"IPv4", value:codeBlock(A) },
             { name:"IPv6", value:codeBlock(AAAA) },
             { name:"NS", value:codeBlock(NS) },
-            { name:"MX", value:codeBlock([...MX].sort((a,b)=>a.priority-b.priority).map(x=>`${x.priority} ${x.exchange}`)) },
+            { name:"MX", value:codeBlock(formatMx(MX)) },
             { name:"TXT", value:codeBlock(joinTxt(TXT)) },
             { name:"CNAME", value:codeBlock(CNAME) },
             { name:"CAA", value:codeBlock(CAA.map(r=>`${r.critical?"!":""}${Object.entries(r).filter(([k])=>k!=="critical").map(([k,v])=>`${k} ${v}`).join(" ")}`)) },

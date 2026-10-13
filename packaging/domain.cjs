@@ -47,6 +47,12 @@ function codeBlock(lines){
     return `\`\`\`\n${body}\n\`\`\``
 }
 
+// MX records by priority; a single "0 ." record (RFC 7505 null MX) means the domain takes no mail
+function formatMx(records){
+    if(records.length===1 && (records[0].exchange===""||records[0].exchange===".")) return ["Null MX: bu domain e-posta kabul etmiyor"]
+    return [...records].sort((a,b)=>a.priority-b.priority).map(x=>`${x.priority} ${x.exchange}`)
+}
+
 // Discord also rejects a whole embed over 6000 characters; several long record sets can pass that
 // even when each field fits, so later fields are shortened once the budget is spent.
 function fitFields(fields,budget=5500){
@@ -61,4 +67,4 @@ function fitFields(fields,budget=5500){
     })
 }
 
-module.exports = { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields }
+module.exports = { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx }

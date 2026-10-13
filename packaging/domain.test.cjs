@@ -1,6 +1,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
-const { normalizeDomain, gradeEmailSecurity, codeBlock, fitFields } = require('./domain.cjs')
+const { normalizeDomain, gradeEmailSecurity, codeBlock, fitFields, formatMx } = require('./domain.cjs')
 
 test('normalizeDomain strips scheme, path, port and trailing dot', () => {
   assert.strictEqual(normalizeDomain('https://Example.com/path?q=1'), 'example.com')
@@ -66,4 +66,10 @@ test('fitFields keeps the whole embed under the budget', () => {
 test('fitFields leaves small embeds untouched', () => {
   const fields = [{ name: 'A', value: '`1.2.3.4`' }, { name: 'B', value: 'Yok' }]
   assert.deepStrictEqual(fitFields(fields), fields)
+})
+
+test('formatMx sorts by priority and recognises a null MX', () => {
+  assert.deepStrictEqual(formatMx([{ priority: 20, exchange: 'b.mx' }, { priority: 10, exchange: 'a.mx' }]), ['10 a.mx', '20 b.mx'])
+  assert.match(formatMx([{ priority: 0, exchange: '' }])[0], /Null MX/)
+  assert.deepStrictEqual(formatMx([]), [])
 })
