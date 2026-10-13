@@ -16,7 +16,8 @@ function gradeEmailSecurity(rootTxt,dmarcTxt){
     const spf=joinTxt(rootTxt).filter(t=>t.toLowerCase().startsWith("v=spf1"))
     if(spf.length===0) notes.push("❌ SPF kaydı yok")
     else if(spf.length>1) notes.push("⚠️ Birden fazla SPF kaydı var (geçersiz)")
-    else if(/[+?]all\b/i.test(spf[0])) notes.push("⚠️ SPF çok gevşek (+all / ?all)")
+    // A bare "all" has the default "+" qualifier, so it is as permissive as +all
+    else if(/(?:^|\s)[+?]?all\b/i.test(spf[0])) notes.push("⚠️ SPF çok gevşek (+all / ?all)")
     else if(/~all\b/i.test(spf[0])) notes.push("🟡 SPF softfail (~all)")
     else if(/-all\b/i.test(spf[0])) notes.push("✅ SPF sıkı (-all)")
     else if(/\bredirect=\S+/i.test(spf[0])) notes.push(`↪️ SPF ${spf[0].match(/redirect=(\S+)/i)[1]} adresine yönlendiriliyor`)
