@@ -1,6 +1,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
-const { normalizeDomain, gradeEmailSecurity } = require('./domain.cjs')
+const { normalizeDomain, gradeEmailSecurity, codeBlock, fitFields } = require('./domain.cjs')
 
 test('normalizeDomain strips scheme, path, port and trailing dot', () => {
   assert.strictEqual(normalizeDomain('https://Example.com/path?q=1'), 'example.com')
@@ -38,7 +38,6 @@ test('DMARC partial pct and missing rua are reported', () => {
   assert.deepStrictEqual(notes.slice(1), ["🟡 DMARC p=quarantine", "🟡 DMARC politikası e-postaların sadece %25'ine uygulanıyor", 'ℹ️ DMARC rapor adresi (rua) yok'])
 })
 
-const { codeBlock } = require('./domain.cjs')
 
 test('codeBlock wraps records and stays under the field limit', () => {
   assert.strictEqual(codeBlock([]), 'Yok')
@@ -51,4 +50,20 @@ test('codeBlock wraps records and stays under the field limit', () => {
 test('DMARC without a valid p= tag is reported as invalid', () => {
   assert.match(gradeEmailSecurity([], [['v=DMARC1; rua=mailto:d@example.com']]).notes[1], /geçersiz/)
   assert.match(gradeEmailSecurity([], [['v=DMARC1; p=none; rua=mailto:d@example.com']]).notes[1], /p=none/)
+})
+
+test('fitFields keeps the whole embed under the budget', () => {
+  const big = codeBlock(['x'.repeat(2000)])
+  const fields = Array.from({ length: 8 }, (_, i) => ({ name: `F${i}`, value: big }))
+  const fitted = fitFields(fields)
+  const total = fitted.reduce((n, f) => n + f.name.length + f.value.length, 0)
+  // fields past the budget still carry a short placeholder; title, description and footer need the rest of the 6000
+  assert.ok(total <= 5600, `total ${total}`)
+  assert.strictEqual(fitted[0].value, big)
+  assert.ok(fitted.every(f => f.value.length > 0 && f.value.length <= 1024))
+})
+
+test('fitFields leaves small embeds untouched', () => {
+  const fields = [{ name: 'A', value: '`1.2.3.4`' }, { name: 'B', value: 'Yok' }]
+  assert.deepStrictEqual(fitFields(fields), fields)
 })

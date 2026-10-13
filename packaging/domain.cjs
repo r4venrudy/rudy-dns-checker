@@ -47,4 +47,18 @@ function codeBlock(lines){
     return `\`\`\`\n${body}\n\`\`\``
 }
 
-module.exports = { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock }
+// Discord also rejects a whole embed over 6000 characters; several long record sets can pass that
+// even when each field fits, so later fields are shortened once the budget is spent.
+function fitFields(fields,budget=5500){
+    let used=0
+    return fields.map(f=>{
+        const size=f.name.length+f.value.length
+        if(used+size<=budget){ used+=size; return f }
+        const room=budget-used-f.name.length-8
+        const value=room>20 ? codeBlock([f.value.replace(/```\n?/g,"").slice(0,room)]) : "Kısaltıldı"
+        used+=f.name.length+value.length
+        return { ...f, value }
+    })
+}
+
+module.exports = { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields }
