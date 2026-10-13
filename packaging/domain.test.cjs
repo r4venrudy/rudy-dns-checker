@@ -1,6 +1,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
-const { normalizeDomain, gradeEmailSecurity, codeBlock, fitFields, formatMx, summarizeDkim } = require('./domain.cjs')
+const { normalizeDomain, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, summarizeDkim } = require('./domain.cjs')
 
 test('normalizeDomain strips scheme, path, port and trailing dot', () => {
   assert.strictEqual(normalizeDomain('https://Example.com/path?q=1'), 'example.com')
@@ -82,4 +82,10 @@ test('summarizeDkim lists selectors that publish a key', () => {
   ])
   assert.strictEqual(note, '✅ DKIM anahtarı bulundu: google')
   assert.match(summarizeDkim([{ selector: 'google', txt: [] }]), /bulunamadı/)
+})
+
+test('formatSoa shows the primary NS, admin address and serial', () => {
+  assert.deepStrictEqual(formatSoa({ nsname: 'ns1.example.com', hostmaster: 'hostmaster.example.com', serial: 2026101301 }),
+    ['Birincil NS: ns1.example.com', 'Yönetici: hostmaster@example.com', 'Seri: 2026101301'])
+  assert.deepStrictEqual(formatSoa([]), [])
 })

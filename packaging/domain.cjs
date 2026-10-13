@@ -59,6 +59,13 @@ function summarizeDkim(results){
         : "ℹ️ Yaygın seçicilerde DKIM bulunamadı (özel seçici kullanılıyor olabilir)"
 }
 
+// dns.resolve(domain,"SOA") gives one object; show the primary NS, the admin mailbox as an address, and the serial
+function formatSoa(soa){
+    if(!soa || !soa.nsname) return []
+    const admin=String(soa.hostmaster||"").replace(".","@")
+    return [`Birincil NS: ${soa.nsname}`, `Yönetici: ${admin}`, `Seri: ${soa.serial}`]
+}
+
 // MX records by priority; a single "0 ." record (RFC 7505 null MX) means the domain takes no mail
 function formatMx(records){
     if(records.length===1 && (records[0].exchange===""||records[0].exchange===".")) return ["Null MX: bu domain e-posta kabul etmiyor"]
@@ -79,4 +86,4 @@ function fitFields(fields,budget=5500){
     })
 }
 
-module.exports = { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, DKIM_SELECTORS, summarizeDkim }
+module.exports = { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, DKIM_SELECTORS, summarizeDkim }
