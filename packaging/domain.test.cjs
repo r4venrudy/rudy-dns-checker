@@ -1,6 +1,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
-const { normalizeDomain, gradeEmailSecurity, codeBlock, fitFields, formatMx } = require('./domain.cjs')
+const { normalizeDomain, gradeEmailSecurity, codeBlock, fitFields, formatMx, summarizeDkim } = require('./domain.cjs')
 
 test('normalizeDomain strips scheme, path, port and trailing dot', () => {
   assert.strictEqual(normalizeDomain('https://Example.com/path?q=1'), 'example.com')
@@ -72,4 +72,14 @@ test('formatMx sorts by priority and recognises a null MX', () => {
   assert.deepStrictEqual(formatMx([{ priority: 20, exchange: 'b.mx' }, { priority: 10, exchange: 'a.mx' }]), ['10 a.mx', '20 b.mx'])
   assert.match(formatMx([{ priority: 0, exchange: '' }])[0], /Null MX/)
   assert.deepStrictEqual(formatMx([]), [])
+})
+
+test('summarizeDkim lists selectors that publish a key', () => {
+  const note = summarizeDkim([
+    { selector: 'google', txt: [['v=DKIM1; k=rsa; ', 'p=MIGf']] },
+    { selector: 'selector1', txt: [] },
+    { selector: 'default', txt: [['some unrelated text']] },
+  ])
+  assert.strictEqual(note, '✅ DKIM anahtarı bulundu: google')
+  assert.match(summarizeDkim([{ selector: 'google', txt: [] }]), /bulunamadı/)
 })

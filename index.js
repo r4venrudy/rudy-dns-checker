@@ -34,7 +34,7 @@ try{
 import runtimeConfig from './packaging/config.cjs'
 import whoisHelpers from './packaging/whois-summary.cjs'
 import domainHelpers from './packaging/domain.cjs'
-const { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx } = domainHelpers
+const { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, DKIM_SELECTORS, summarizeDkim } = domainHelpers
 const config = runtimeConfig.loadConfig({ token: 'DISCORD_TOKEN', clientId: 'CLIENT_ID' })
 if (process.argv.includes('--check-config')) { console.log('Configuration and dependencies ready'); process.exit(0) }
 
@@ -99,6 +99,7 @@ client.on("interactionCreate",async interaction=>{
         CNAME,
         CAA,
         DMARC,
+        DKIM,
         whoisData
     ] = await Promise.all([
         safeResolve(domain,"A"),
@@ -109,6 +110,7 @@ client.on("interactionCreate",async interaction=>{
         safeResolve(domain,"CNAME"),
         safeResolve(domain,"CAA"),
         safeResolve(`_dmarc.${domain}`,"TXT"),
+        Promise.all(DKIM_SELECTORS.map(async selector=>({ selector, txt:await safeResolve(`${selector}._domainkey.${domain}`,"TXT") }))),
         whoiser(domain,{ timeout:10000 }).catch(()=>null)
     ])
     const email=gradeEmailSecurity(TXT,DMARC)
@@ -133,7 +135,7 @@ client.on("interactionCreate",async interaction=>{
             { name:"TXT", value:codeBlock(joinTxt(TXT)) },
             { name:"CNAME", value:codeBlock(CNAME) },
             { name:"CAA", value:codeBlock(CAA.map(r=>`${r.critical?"!":""}${Object.entries(r).filter(([k])=>k!=="critical").map(([k,v])=>`${k} ${v}`).join(" ")}`)) },
-            { name:"E-posta Güvenliği (SPF / DMARC)", value:email.notes.join("\n") },
+            { name:"E-posta Güvenliği (SPF / DMARC / DKIM)", value:[...email.notes, summarizeDkim(DKIM)].join("\n") },
             { name:"Registrar", value:`\`${registrar}\`` },
             { name:"Oluşturulma", value:`\`${created}\``, inline:true },
             { name:"Bitiş", value:`\`${expires}\``, inline:true }

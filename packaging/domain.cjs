@@ -47,6 +47,18 @@ function codeBlock(lines){
     return `\`\`\`\n${body}\n\`\`\``
 }
 
+// DKIM keys live at <selector>._domainkey.<domain> and selectors are not discoverable,
+// so only the ones big providers use by default are probed.
+const DKIM_SELECTORS=["google","selector1","selector2","default","k1","s1","s2","dkim","mail"]
+
+// results: [{ selector, txt: [...] }] -> one note line
+function summarizeDkim(results){
+    const found=results.filter(r=>joinTxt(r.txt).some(t=>/(^|;)\s*(v=dkim1|p=)/i.test(t))).map(r=>r.selector)
+    return found.length
+        ? `✅ DKIM anahtarı bulundu: ${found.join(", ")}`
+        : "ℹ️ Yaygın seçicilerde DKIM bulunamadı (özel seçici kullanılıyor olabilir)"
+}
+
 // MX records by priority; a single "0 ." record (RFC 7505 null MX) means the domain takes no mail
 function formatMx(records){
     if(records.length===1 && (records[0].exchange===""||records[0].exchange===".")) return ["Null MX: bu domain e-posta kabul etmiyor"]
@@ -67,4 +79,4 @@ function fitFields(fields,budget=5500){
     })
 }
 
-module.exports = { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx }
+module.exports = { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, DKIM_SELECTORS, summarizeDkim }
