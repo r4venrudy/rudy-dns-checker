@@ -47,3 +47,8 @@ test('codeBlock wraps records and stays under the field limit', () => {
   assert.ok(big.length <= 1024)
   assert.ok(big.includes('…'))
 })
+
+test('DMARC without a valid p= tag is reported as invalid', () => {
+  assert.match(gradeEmailSecurity([], [['v=DMARC1; rua=mailto:d@example.com']]).notes[1], /geçersiz/)
+  assert.match(gradeEmailSecurity([], [['v=DMARC1; p=none; rua=mailto:d@example.com']]).notes[1], /p=none/)
+})
