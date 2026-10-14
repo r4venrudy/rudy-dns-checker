@@ -66,6 +66,15 @@ function formatSoa(soa){
     return [`Birincil NS: ${soa.nsname}`, `Yönetici: ${admin}`, `Seri: ${soa.serial}`]
 }
 
+// Node's resolver cannot ask for DS records, so DNSSEC is checked with a DNS-over-HTTPS JSON answer
+// (Cloudflare / Google format). A DS record at the parent zone means the domain is signed.
+function dnssecNote(doh){
+    if(!doh || typeof doh.Status!=="number") return "ℹ️ DNSSEC kontrol edilemedi"
+    const ds=(doh.Answer||[]).filter(a=>a.type===43)
+    if(doh.Status===0 && ds.length) return `✅ DNSSEC etkin (${ds.length} DS kaydı)`
+    return "⚠️ DNSSEC yok (DS kaydı bulunamadı)"
+}
+
 // MX records by priority; a single "0 ." record (RFC 7505 null MX) means the domain takes no mail
 function formatMx(records){
     if(records.length===1 && (records[0].exchange===""||records[0].exchange===".")) return ["Null MX: bu domain e-posta kabul etmiyor"]
@@ -86,4 +95,4 @@ function fitFields(fields,budget=5500){
     })
 }
 
-module.exports = { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, DKIM_SELECTORS, summarizeDkim }
+module.exports = { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, DKIM_SELECTORS, summarizeDkim }

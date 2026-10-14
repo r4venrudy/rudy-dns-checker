@@ -34,7 +34,7 @@ try{
 import runtimeConfig from './packaging/config.cjs'
 import whoisHelpers from './packaging/whois-summary.cjs'
 import domainHelpers from './packaging/domain.cjs'
-const { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, DKIM_SELECTORS, summarizeDkim } = domainHelpers
+const { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, DKIM_SELECTORS, summarizeDkim } = domainHelpers
 const config = runtimeConfig.loadConfig({ token: 'DISCORD_TOKEN', clientId: 'CLIENT_ID' })
 if (process.argv.includes('--check-config')) { console.log('Configuration and dependencies ready'); process.exit(0) }
 
@@ -70,6 +70,17 @@ client.once("ready", () => {
     console.log(`Bot aktif: ${client.user.tag}`)
 })
 
+// DS records via Cloudflare's DNS-over-HTTPS JSON API; null when it can't be reached
+async function fetchDs(domain){
+    try{
+        const url=`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=DS`
+        const res=await fetch(url,{ headers:{ accept:"application/dns-json" }, signal:AbortSignal.timeout(8000) })
+        return res.ok ? await res.json() : null
+    }catch{
+        return null
+    }
+}
+
 async function safeResolve(domain,type){
     try{
         return await dns.resolve(domain,type)
@@ -101,6 +112,7 @@ client.on("interactionCreate",async interaction=>{
         SOA,
         DMARC,
         DKIM,
+        DS,
         whoisData
     ] = await Promise.all([
         safeResolve(domain,"A"),
@@ -113,6 +125,7 @@ client.on("interactionCreate",async interaction=>{
         safeResolve(domain,"SOA"),
         safeResolve(`_dmarc.${domain}`,"TXT"),
         Promise.all(DKIM_SELECTORS.map(async selector=>({ selector, txt:await safeResolve(`${selector}._domainkey.${domain}`,"TXT") }))),
+        fetchDs(domain),
         whoiser(domain,{ timeout:10000 }).catch(()=>null)
     ])
     const email=gradeEmailSecurity(TXT,DMARC)
@@ -137,6 +150,7 @@ client.on("interactionCreate",async interaction=>{
             { name:"TXT", value:codeBlock(joinTxt(TXT)) },
             { name:"CNAME", value:codeBlock(CNAME) },
             { name:"SOA", value:codeBlock(formatSoa(SOA)) },
+            { name:"DNSSEC", value:dnssecNote(DS) },
             { name:"CAA", value:codeBlock(CAA.map(r=>`${r.critical?"!":""}${Object.entries(r).filter(([k])=>k!=="critical").map(([k,v])=>`${k} ${v}`).join(" ")}`)) },
             { name:"E-posta Güvenliği (SPF / DMARC / DKIM)", value:[...email.notes, summarizeDkim(DKIM)].join("\n") },
             { name:"Registrar", value:`\`${registrar}\`` },

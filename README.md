@@ -20,7 +20,7 @@ A Discord `/domain` bot that resolves public DNS records, queries WHOIS and summ
 
 | Layer | Implemented behavior |
 | :--- | :--- |
-| DNS | A, AAAA, NS, MX (sorted by priority, null MX explained), TXT, CNAME, SOA and CAA lookups |
+| DNS | A, AAAA, NS, MX (sorted by priority, null MX explained), TXT, CNAME, SOA and CAA lookups; DNSSEC from the DS record via Cloudflare DNS-over-HTTPS |
 | Mail policy | SPF presence/multiplicity and `all` qualifiers; DMARC policy summary; DKIM keys at common selectors |
 | WHOIS | Registrar, creation and expiry dates (first non-empty value across WHOIS servers, 10 s timeout); warns when a domain expires within 30 days |
 | Discord | Registers `/domain` globally and returns a structured embed; accepts pasted URLs (`https://example.com/path` becomes `example.com`) |
@@ -75,7 +75,7 @@ For an offline configuration regression check, run `npm test`. No real token or 
 ## Implementation notes
 
 - The actual slash command is `/domain`; this is a domain/DNS bot rather than an IP lookup bot.
-- SPF and DMARC checks are lightweight string heuristics. They do not recursively evaluate SPF includes, validate DKIM keys, verify DNSSEC or certify mail delivery.
+- SPF and DMARC checks are lightweight string heuristics. They do not recursively evaluate SPF includes, validate DKIM keys or the DNSSEC chain, or certify mail delivery.
 - WHOIS response shape varies; registrar and date fields can be unavailable. Long answers are shortened so the embed stays under Discord's 6000 character limit.
 - Run from the repository root because configuration and asset paths use the working directory. Replies are channel-visible; API availability and Discord setup require live validation.
 
