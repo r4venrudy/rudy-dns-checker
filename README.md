@@ -55,6 +55,8 @@ DISCORD_TOKEN=YOUR_DISCORD_BOT_TOKEN
 CLIENT_ID=YOUR_DISCORD_APPLICATION_ID
 ```
 
+Optionally set `COOLDOWN_SECONDS` (default 10) to change how long each user waits between lookups.
+
 Keep `.env` private; it is ignored by Git. Node loads it only when you pass `--env-file`. First check the installation without connecting to Discord:
 
 ```bash

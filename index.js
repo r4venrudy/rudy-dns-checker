@@ -35,9 +35,12 @@ try{
 import runtimeConfig from './packaging/config.cjs'
 import whoisHelpers from './packaging/whois-summary.cjs'
 import domainHelpers from './packaging/domain.cjs'
+import cooldownHelpers from './packaging/cooldown.cjs'
 const { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, mailTransportNotes, DKIM_SELECTORS, summarizeDkim } = domainHelpers
 const config = runtimeConfig.loadConfig({ token: 'DISCORD_TOKEN', clientId: 'CLIENT_ID' })
 if (process.argv.includes('--check-config')) { console.log('Configuration and dependencies ready'); process.exit(0) }
+
+const cooldown=cooldownHelpers.createCooldown(cooldownHelpers.secondsFromEnv(process.env.COOLDOWN_SECONDS,10)*1000)
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds]
@@ -101,6 +104,11 @@ client.on("interactionCreate",async interaction=>{
     const unicodeName=domain ? domainToUnicode(domain) : null
     if(!domain){
         await interaction.reply({ content:"❌ Geçerli bir domain girin (örnek: example.com)", ephemeral:true })
+        return
+    }
+    const wait=cooldown.take(interaction.user.id)
+    if(wait>0){
+        await interaction.reply({ content:`⏳ Bir sonraki sorgu için ${Math.ceil(wait/1000)} sn bekleyin.`, ephemeral:true })
         return
     }
     await interaction.deferReply()
