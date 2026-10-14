@@ -78,6 +78,16 @@ function dnssecNote(doh){
     return "⚠️ DNSSEC yok (DS kaydı bulunamadı)"
 }
 
+// MTA-STS (_mta-sts TXT, "v=STSv1") makes senders require TLS; TLS-RPT (_smtp._tls TXT, "v=TLSRPTv1")
+// asks them to report TLS failures. Only worth checking when the domain receives mail.
+function mailTransportNotes(mtaStsTxt, tlsRptTxt){
+    const has=(txt,prefix)=>joinTxt(txt).some(t=>t.toLowerCase().startsWith(prefix))
+    return [
+        has(mtaStsTxt,"v=stsv1") ? "✅ MTA-STS kaydı var" : "ℹ️ MTA-STS yok (TLS zorunlu değil)",
+        has(tlsRptTxt,"v=tlsrptv1") ? "✅ TLS-RPT raporlaması açık" : "ℹ️ TLS-RPT yok"
+    ]
+}
+
 // MX records by priority; a single "0 ." record (RFC 7505 null MX) means the domain takes no mail
 function formatMx(records){
     if(records.length===1 && (records[0].exchange===""||records[0].exchange===".")) return ["Null MX: bu domain e-posta kabul etmiyor"]
@@ -98,4 +108,4 @@ function fitFields(fields,budget=5500){
     })
 }
 
-module.exports = { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, DKIM_SELECTORS, summarizeDkim }
+module.exports = { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, mailTransportNotes, DKIM_SELECTORS, summarizeDkim }

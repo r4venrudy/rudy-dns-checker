@@ -1,6 +1,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
-const { normalizeDomain, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, summarizeDkim } = require('./domain.cjs')
+const { normalizeDomain, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, mailTransportNotes, summarizeDkim } = require('./domain.cjs')
 
 test('normalizeDomain strips scheme, path, port and trailing dot', () => {
   assert.strictEqual(normalizeDomain('https://Example.com/path?q=1'), 'example.com')
@@ -100,4 +100,10 @@ test('dnssecNote reads a DNS-over-HTTPS DS answer', () => {
   assert.match(dnssecNote({ Status: 0, Answer: [] }), /DNSSEC yok/)
   assert.match(dnssecNote({ Status: 3 }), /DNSSEC yok/)
   assert.match(dnssecNote(null), /kontrol edilemedi/)
+})
+
+test('mailTransportNotes reports MTA-STS and TLS-RPT', () => {
+  assert.deepStrictEqual(mailTransportNotes([['v=STSv1; id=20240101']], [['v=TLSRPTv1; rua=mailto:tls@example.com']]),
+    ['✅ MTA-STS kaydı var', '✅ TLS-RPT raporlaması açık'])
+  assert.deepStrictEqual(mailTransportNotes([], [['unrelated']]), ['ℹ️ MTA-STS yok (TLS zorunlu değil)', 'ℹ️ TLS-RPT yok'])
 })
