@@ -10,6 +10,7 @@ import {
 } from "discord.js"
 import { REST } from "@discordjs/rest"
 import dns from "dns/promises"
+import { domainToUnicode } from "url"
 import whoiser from "whoiser"
 
 function ravenFail(){
@@ -94,6 +95,8 @@ client.on("interactionCreate",async interaction=>{
     if(interaction.commandName!=="domain") return
 
     const domain=normalizeDomain(interaction.options.getString("domain"))
+    // show "xn--rnek-4qa.com.tr (örnek.com.tr)" so a punycode name is still recognisable
+    const unicodeName=domain ? domainToUnicode(domain) : null
     if(!domain){
         await interaction.reply({ content:"❌ Geçerli bir domain girin (örnek: example.com)", ephemeral:true })
         return
@@ -140,7 +143,7 @@ client.on("interactionCreate",async interaction=>{
 
     const embed=new EmbedBuilder()
         .setColor(0x00ffea)
-        .setTitle(`┌──(root㉿kali)-[~]\n└─$ domain ${domain}`)
+        .setTitle(`┌──(root㉿kali)-[~]\n└─$ domain ${domain}${unicodeName!==domain ? ` (${unicodeName})` : ""}`)
         .setDescription("Aşağıda hedef domain için bulunan açık DNS ve WHOIS verileri yer almaktadır.")
         .addFields(...fitFields([
             { name:"IPv4", value:codeBlock(A) },
