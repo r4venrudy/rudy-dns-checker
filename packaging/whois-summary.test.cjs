@@ -4,18 +4,22 @@ const { whoisSummary } = require('./whois-summary.cjs');
 
 test('takes the first non-empty value across WHOIS servers', () => {
   const results = {
-    'whois.verisign-grs.com': { 'Registrar': 'MarkMonitor Inc.', 'Created Date': '2007-10-09T18:20:50Z', 'Expiry Date': '' },
-    'whois.markmonitor.com': { 'Registrar': 'MarkMonitor, Inc.', 'Expiry Date': ['2026-10-09T18:20:50Z'] }
+    'whois.verisign-grs.com': { 'Registrar': 'MarkMonitor Inc.', 'Created Date': '2007-10-09T18:20:50Z', 'Expiry Date': '',
+      'Domain Status': ['clientTransferProhibited https://icann.org/epp#clientTransferProhibited', 'serverDeleteProhibited https://icann.org/epp#serverDeleteProhibited'] },
+    'whois.markmonitor.com': { 'Registrar': 'MarkMonitor, Inc.', 'Expiry Date': ['2026-10-09T18:20:50Z'], 'Updated Date': '2024-08-14T07:01:34Z',
+      'Domain Status': 'clientTransferProhibited (https://www.icann.org/epp#clientTransferProhibited)' }
   };
   assert.deepStrictEqual(whoisSummary(results), {
     registrar: 'MarkMonitor Inc.',
     created: '2007-10-09T18:20:50Z',
-    expires: '2026-10-09T18:20:50Z'
+    updated: '2024-08-14T07:01:34Z',
+    expires: '2026-10-09T18:20:50Z',
+    statuses: ['clientTransferProhibited', 'serverDeleteProhibited']
   });
 });
 
 test('missing results give nulls', () => {
-  assert.deepStrictEqual(whoisSummary(null), { registrar: null, created: null, expires: null });
+  assert.deepStrictEqual(whoisSummary(null), { registrar: null, created: null, updated: null, expires: null, statuses: [] });
 });
 
 const { formatDate, daysUntil } = require('./whois-summary.cjs');

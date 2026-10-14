@@ -155,7 +155,10 @@ client.on("interactionCreate",async interaction=>{
             { name:"E-posta Güvenliği (SPF / DMARC / DKIM)", value:[...email.notes, summarizeDkim(DKIM)].join("\n") },
             { name:"Registrar", value:`\`${registrar}\`` },
             { name:"Oluşturulma", value:`\`${created}\``, inline:true },
-            { name:"Bitiş", value:`\`${expires}\``, inline:true }
+            { name:"Bitiş", value:`\`${expires}\``, inline:true },
+            { name:"Güncelleme", value:`\`${whoisHelpers.formatDate(summary.updated) || "Bilinmiyor"}\``, inline:true },
+            // transfer/delete locks show whether the domain is protected against hijacking
+            { name:"Durum (EPP)", value:summary.statuses.length ? codeBlock(summary.statuses) : "Bilinmiyor" }
         ]))
         .setFooter({ text:"Kali Linux | DNS / WHOIS Lookup" })
 

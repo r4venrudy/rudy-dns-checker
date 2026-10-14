@@ -36,11 +36,26 @@ function expiryText(value, now = new Date()) {
   return `${date} ⚠️ ${left} gün kaldı`;
 }
 
+// EPP status codes ("clientTransferProhibited https://icann.org/epp#...") from every server, deduplicated
+function statuses(results) {
+  const out = new Set();
+  for (const server of Object.values(results || {})) {
+    const value = server && server['Domain Status'];
+    for (const v of Array.isArray(value) ? value : value ? [value] : []) {
+      const code = String(v).trim().split(/\s+/)[0];
+      if (code) out.add(code);
+    }
+  }
+  return [...out];
+}
+
 function whoisSummary(results) {
   return {
     registrar: pick(results, 'Registrar'),
     created: pick(results, 'Created Date'),
-    expires: pick(results, 'Expiry Date')
+    updated: pick(results, 'Updated Date'),
+    expires: pick(results, 'Expiry Date'),
+    statuses: statuses(results)
   };
 }
 
