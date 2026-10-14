@@ -26,6 +26,16 @@ function daysUntil(value, now = new Date()) {
   return Number.isNaN(d.getTime()) ? null : Math.floor((d - now) / 86400000);
 }
 
+// Expiry line for the embed: warns inside 30 days and says plainly when the date has passed
+function expiryText(value, now = new Date()) {
+  if (!value) return null;
+  const left = daysUntil(value, now);
+  const date = formatDate(value);
+  if (left === null || left >= 30) return date;
+  if (left < 0) return `${date} ❌ süresi ${-left} gün önce dolmuş`;
+  return `${date} ⚠️ ${left} gün kaldı`;
+}
+
 function whoisSummary(results) {
   return {
     registrar: pick(results, 'Registrar'),
@@ -34,4 +44,4 @@ function whoisSummary(results) {
   };
 }
 
-module.exports = { whoisSummary, formatDate, daysUntil };
+module.exports = { whoisSummary, formatDate, daysUntil, expiryText };

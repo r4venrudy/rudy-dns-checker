@@ -32,3 +32,14 @@ test('daysUntil counts whole days and handles bad input', () => {
   assert.strictEqual(daysUntil('2026-09-30T00:00:00Z', now), -1);
   assert.strictEqual(daysUntil('garbage', now), null);
 });
+
+const { expiryText } = require('./whois-summary.cjs');
+
+test('expiryText warns before expiry and reports an expired domain', () => {
+  const now = new Date('2026-10-14T00:00:00Z');
+  assert.strictEqual(expiryText('2027-05-01T00:00:00Z', now), '2027-05-01');
+  assert.strictEqual(expiryText('2026-10-24T00:00:00Z', now), '2026-10-24 ⚠️ 10 gün kaldı');
+  assert.strictEqual(expiryText('2026-10-09T00:00:00Z', now), '2026-10-09 ❌ süresi 5 gün önce dolmuş');
+  assert.strictEqual(expiryText('before Aug-1996', now), 'before Aug-1996');
+  assert.strictEqual(expiryText(null, now), null);
+});

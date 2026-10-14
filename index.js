@@ -136,10 +136,7 @@ client.on("interactionCreate",async interaction=>{
     const summary=whoisHelpers.whoisSummary(whoisData)
     const registrar=summary.registrar || "Bilinmiyor"
     const created=whoisHelpers.formatDate(summary.created) || "Bilinmiyor"
-    const left=whoisHelpers.daysUntil(summary.expires)
-    const expires=summary.expires
-        ? `${whoisHelpers.formatDate(summary.expires)}${left!==null && left<30 ? ` ⚠️ ${left} gün kaldı` : ""}`
-        : "Bilinmiyor"
+    const expires=whoisHelpers.expiryText(summary.expires) || "Bilinmiyor"
 
     const embed=new EmbedBuilder()
         .setColor(0x00ffea)
