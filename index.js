@@ -150,7 +150,8 @@ client.on("interactionCreate",async interaction=>{
 
     const embed=new EmbedBuilder()
         .setColor(0x00ffea)
-        .setTitle(`┌──(root㉿kali)-[~]\n└─$ domain ${domain}${unicodeName!==domain ? ` (${unicodeName})` : ""}`)
+        // Discord rejects titles over 256 characters, which a long name plus its Unicode form can reach
+        .setTitle(`┌──(root㉿kali)-[~]\n└─$ domain ${domain}${unicodeName!==domain ? ` (${unicodeName})` : ""}`.slice(0,256))
         .setDescription("Aşağıda hedef domain için bulunan açık DNS ve WHOIS verileri yer almaktadır.")
         .addFields(...fitFields([
             { name:"IPv4 (PTR)", value:codeBlock(ipv4) },
