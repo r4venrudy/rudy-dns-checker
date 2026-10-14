@@ -8,7 +8,7 @@
 
 <p align="center"><strong>Domain records and mail-policy signals in one command.</strong></p>
 
-<p align="center"><a href="#overview">Overview</a> · <a href="#capabilities">Capabilities</a> · <a href="#email-security-spf--dmarc">Mail policy</a> · <a href="#quick-start">Quick start</a> · <a href="#implementation-notes">Implementation notes</a></p>
+<p align="center"><a href="#overview">Overview</a> · <a href="#capabilities">Capabilities</a> · <a href="#email-security-spf--dmarc--dkim--mta-sts">Mail policy</a> · <a href="#quick-start">Quick start</a> · <a href="#implementation-notes">Implementation notes</a></p>
 
 ---
 
