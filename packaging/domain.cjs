@@ -1,8 +1,11 @@
+const { domainToASCII } = require('node:url')
 // Pure helpers for /domain: input normalization and SPF/DMARC grading (no Discord or network access).
 // "https://Example.com/path" -> "example.com"; returns null for anything that isn't a hostname
+// Internationalized names ("örnek.com.tr") are converted to punycode ("xn--rnek-zoa.com.tr") first.
 function normalizeDomain(input){
-    const d=String(input||"").trim().toLowerCase()
+    const raw=String(input||"").trim().toLowerCase()
         .replace(/^[a-z]+:\/\//,"").split(/[/?#]/)[0].replace(/:\d+$/,"").replace(/\.$/,"")
+    const d=/[^\x00-\x7f]/.test(raw) ? domainToASCII(raw) : raw
     return /^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(d) ? d : null
 }
 

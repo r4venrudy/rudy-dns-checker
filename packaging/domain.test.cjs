@@ -8,6 +8,11 @@ test('normalizeDomain strips scheme, path, port and trailing dot', () => {
   assert.strictEqual(normalizeDomain('sub.domain.co.uk:443'), 'sub.domain.co.uk')
 })
 
+test('normalizeDomain converts internationalized names to punycode', () => {
+  assert.strictEqual(normalizeDomain('Örnek.com.tr'), 'xn--rnek-4qa.com.tr')
+  assert.strictEqual(normalizeDomain('https://şirket.com/'), 'xn--irket-idb.com')
+})
+
 test('normalizeDomain rejects non-hostnames', () => {
   for (const bad of ['not a domain', 'localhost', '-bad.com', '', null]) assert.strictEqual(normalizeDomain(bad), null)
 })

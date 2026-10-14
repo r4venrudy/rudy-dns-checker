@@ -23,7 +23,7 @@ A Discord `/domain` bot that resolves public DNS records, queries WHOIS and summ
 | DNS | A, AAAA, NS, MX (sorted by priority, null MX explained), TXT, CNAME, SOA and CAA lookups; DNSSEC from the DS record via Cloudflare DNS-over-HTTPS |
 | Mail policy | SPF presence/multiplicity and `all` qualifiers; DMARC policy summary; DKIM keys at common selectors |
 | WHOIS | Registrar, creation and expiry dates (first non-empty value across WHOIS servers, 10 s timeout); warns when a domain expires within 30 days |
-| Discord | Registers `/domain` globally and returns a structured embed; accepts pasted URLs (`https://example.com/path` becomes `example.com`) |
+| Discord | Registers `/domain` globally and returns a structured embed; accepts pasted URLs (`https://example.com/path` becomes `example.com`) and Turkish or other internationalized names (converted to punycode) |
 
 ## Email Security (SPF / DMARC / DKIM)
 
