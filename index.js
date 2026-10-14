@@ -132,6 +132,10 @@ client.on("interactionCreate",async interaction=>{
         whoiser(domain,{ timeout:10000 }).catch(()=>null)
     ])
     const email=gradeEmailSecurity(TXT,DMARC)
+    // reverse DNS for the first few addresses often names the hosting provider (e.g. ec2-...amazonaws.com)
+    const ipv4=await Promise.all(A.map((ip,i)=>i<5
+        ? dns.reverse(ip).then(names=>names[0] ? `${ip}  →  ${names[0]}` : ip,()=>ip)
+        : ip))
 
     const summary=whoisHelpers.whoisSummary(whoisData)
     const registrar=summary.registrar || "Bilinmiyor"
@@ -143,7 +147,7 @@ client.on("interactionCreate",async interaction=>{
         .setTitle(`┌──(root㉿kali)-[~]\n└─$ domain ${domain}${unicodeName!==domain ? ` (${unicodeName})` : ""}`)
         .setDescription("Aşağıda hedef domain için bulunan açık DNS ve WHOIS verileri yer almaktadır.")
         .addFields(...fitFields([
-            { name:"IPv4", value:codeBlock(A) },
+            { name:"IPv4 (PTR)", value:codeBlock(ipv4) },
             { name:"IPv6", value:codeBlock(AAAA) },
             { name:"NS", value:codeBlock(NS) },
             { name:"MX", value:codeBlock(formatMx(MX)) },
