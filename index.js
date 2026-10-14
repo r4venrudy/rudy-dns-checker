@@ -51,6 +51,8 @@ const commands = [
             o.setName("domain")
              .setDescription("Örnek: itemsatis.com")
              .setRequired(true)
+             // longest valid hostname is 253 characters; leave room for a pasted https:// prefix and path
+             .setMaxLength(300)
         )
         .toJSON()
 ]
