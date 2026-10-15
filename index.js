@@ -99,7 +99,7 @@ async function safeResolve(domain,type){
     }
 }
 
-client.on("interactionCreate",async interaction=>{
+async function handleDomain(interaction){
     if(!interaction.isChatInputCommand()) return
     if(interaction.commandName!=="domain") return
 
@@ -191,6 +191,12 @@ client.on("interactionCreate",async interaction=>{
         console.error(`/domain ${domain} failed:`,err)
         await interaction.editReply("❌ Sorgu sırasında bir hata oluştu, lütfen tekrar deneyin.").catch(()=>{})
     }
+}
+
+// reply/deferReply fail when Discord expires the interaction (the bot answered after 3 s); outside a
+// catch that rejection is unhandled, and Node 15+ exits on unhandled rejections
+client.on("interactionCreate",interaction=>{
+    handleDomain(interaction).catch(err=>console.error("/domain could not reply:",err))
 })
 
 client.login(config.token)
