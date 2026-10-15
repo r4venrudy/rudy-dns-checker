@@ -45,9 +45,15 @@ function gradeEmailSecurity(rootTxt,dmarcTxt){
 // Discord rejects embed field values over 1024 characters (long TXT/SPF records hit this)
 function codeBlock(lines){
     if(!lines.length) return "Yok"
-    let body=lines.join("\n")
+    // TXT and CAA values are written by the domain owner; a "```" inside would close the block early
+    let body=lines.join("\n").replace(/```/g,"`\u200b`\u200b`")
     if(body.length>1000) body=body.slice(0,999)+"…"
     return `\`\`\`\n${body}\n\`\`\``
+}
+
+// Inline code for WHOIS values; Discord has no escape for a backtick inside single-backtick code
+function inlineCode(text){
+    return `\`${String(text).replace(/`/g,"ˋ")}\``
 }
 
 // DKIM keys live at <selector>._domainkey.<domain> and selectors are not discoverable,
@@ -108,4 +114,4 @@ function fitFields(fields,budget=5500){
     })
 }
 
-module.exports = { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, mailTransportNotes, DKIM_SELECTORS, summarizeDkim }
+module.exports = { inlineCode, normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, mailTransportNotes, DKIM_SELECTORS, summarizeDkim }

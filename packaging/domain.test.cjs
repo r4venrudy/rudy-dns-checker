@@ -107,3 +107,10 @@ test('mailTransportNotes reports MTA-STS and TLS-RPT', () => {
     ['✅ MTA-STS kaydı var', '✅ TLS-RPT raporlaması açık'])
   assert.deepStrictEqual(mailTransportNotes([], [['unrelated']]), ['ℹ️ MTA-STS yok (TLS zorunlu değil)', 'ℹ️ TLS-RPT yok'])
 })
+
+test('code formatting survives backticks in record values', () => {
+  const { codeBlock, inlineCode } = require('./domain.cjs');
+  const block = codeBlock(['v=spf1 ```oops```']);
+  assert.equal(block.match(/```/g).length, 2);
+  assert.equal(inlineCode('Reg`istrar'), '`Regˋistrar`');
+});

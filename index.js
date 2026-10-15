@@ -36,7 +36,7 @@ import runtimeConfig from './packaging/config.cjs'
 import whoisHelpers from './packaging/whois-summary.cjs'
 import domainHelpers from './packaging/domain.cjs'
 import cooldownHelpers from './packaging/cooldown.cjs'
-const { normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, mailTransportNotes, DKIM_SELECTORS, summarizeDkim } = domainHelpers
+const { inlineCode, normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, mailTransportNotes, DKIM_SELECTORS, summarizeDkim } = domainHelpers
 const config = runtimeConfig.loadConfig({ token: 'DISCORD_TOKEN', clientId: 'CLIENT_ID' })
 if (process.argv.includes('--check-config')) { console.log('Configuration and dependencies ready'); process.exit(0) }
 
@@ -173,10 +173,10 @@ client.on("interactionCreate",async interaction=>{
             { name:"CAA", value:codeBlock(CAA.map(r=>`${r.critical?"!":""}${Object.entries(r).filter(([k])=>k!=="critical").map(([k,v])=>`${k} ${v}`).join(" ")}`)) },
             { name:"E-posta Güvenliği (SPF / DMARC / DKIM / MTA-STS)", value:[...email.notes, summarizeDkim(DKIM), ...(MX.length ? mailTransportNotes(MTASTS,TLSRPT) : [])].join("\n") },
             // for a subdomain the WHOIS data belongs to the registered name it sits under
-            { name:whoisData && whoisData.name!==domain ? `Registrar (${whoisData.name})` : "Registrar", value:`\`${registrar}\`` },
-            { name:"Oluşturulma", value:`\`${created}\``, inline:true },
-            { name:"Bitiş", value:`\`${expires}\``, inline:true },
-            { name:"Güncelleme", value:`\`${whoisHelpers.formatDate(summary.updated) || "Bilinmiyor"}\``, inline:true },
+            { name:whoisData && whoisData.name!==domain ? `Registrar (${whoisData.name})` : "Registrar", value:inlineCode(registrar) },
+            { name:"Oluşturulma", value:inlineCode(created), inline:true },
+            { name:"Bitiş", value:inlineCode(expires), inline:true },
+            { name:"Güncelleme", value:inlineCode(whoisHelpers.formatDate(summary.updated) || "Bilinmiyor"), inline:true },
             // transfer/delete locks show whether the domain is protected against hijacking
             { name:"Durum (EPP)", value:summary.statuses.length ? codeBlock(summary.statuses) : "Bilinmiyor" }
         ]))
