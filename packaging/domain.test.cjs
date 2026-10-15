@@ -138,3 +138,11 @@ test('a weaker DMARC subdomain policy is flagged', () => {
 test('formatSoa keeps an escaped dot in the admin mailbox', () => {
   assert.strictEqual(formatSoa({ nsname: 'ns1.example.com', hostmaster: 'john\\.doe.example.com', serial: 1 })[1], 'Yönetici: john.doe@example.com')
 })
+
+test('summarizeDkim separates revoked keys (empty p=)', () => {
+  const note = summarizeDkim([
+    { selector: 'google', txt: [['v=DKIM1; k=rsa; p=MIGf']] },
+    { selector: 's1', txt: [['v=DKIM1; p=']] },
+  ])
+  assert.strictEqual(note, '✅ DKIM anahtarı bulundu: google\nℹ️ İptal edilmiş DKIM anahtarı: s1')
+})

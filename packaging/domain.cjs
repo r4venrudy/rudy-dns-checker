@@ -75,10 +75,14 @@ const DKIM_SELECTORS=["google","selector1","selector2","default","k1","s1","s2",
 
 // results: [{ selector, txt: [...] }] -> one note line
 function summarizeDkim(results){
-    const found=results.filter(r=>joinTxt(r.txt).some(t=>/(^|;)\s*(v=dkim1|p=)/i.test(t))).map(r=>r.selector)
-    return found.length
-        ? `✅ DKIM anahtarı bulundu: ${found.join(", ")}`
-        : "ℹ️ Yaygın seçicilerde DKIM bulunamadı (özel seçici kullanılıyor olabilir)"
+    const keys=results.map(r=>({ selector:r.selector, txt:joinTxt(r.txt).find(t=>/(^|;)\s*(v=dkim1|p=)/i.test(t)) })).filter(r=>r.txt)
+    // an empty p= means the key was revoked (RFC 6376 3.6.1); mail signed with it fails DKIM
+    const revoked=keys.filter(k=>/(^|;)\s*p=\s*(;|$)/i.test(k.txt)).map(k=>k.selector)
+    const active=keys.map(k=>k.selector).filter(s=>!revoked.includes(s))
+    const notes=[]
+    if(active.length) notes.push(`✅ DKIM anahtarı bulundu: ${active.join(", ")}`)
+    if(revoked.length) notes.push(`ℹ️ İptal edilmiş DKIM anahtarı: ${revoked.join(", ")}`)
+    return notes.length ? notes.join("\n") : "ℹ️ Yaygın seçicilerde DKIM bulunamadı (özel seçici kullanılıyor olabilir)"
 }
 
 // dns.resolve(domain,"SOA") gives one object; show the primary NS, the admin mailbox as an address, and the serial
