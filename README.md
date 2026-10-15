@@ -27,12 +27,12 @@ A Discord `/domain` bot that resolves public DNS records, queries WHOIS and summ
 
 ## Email Security (SPF / DMARC / DKIM / MTA-STS)
 
-- Flags missing or duplicate SPF records
+- Flags missing or duplicate SPF records, and SPF records whose top level alone needs more than 10 DNS lookups
 - Warns on permissive +all / ?all (a bare `all` counts as +all) and softfail ~all
 - Recognizes `redirect=` delegation instead of warning about a missing `all`
 - Reads the DMARC policy from _dmarc.<domain> (none / quarantine / reject)
 - Warns when DMARC `pct` is below 100 and when no `rua` reporting address is set
-- Reports a DMARC record without a valid `p=` tag as invalid
+- Reports a DMARC record without a valid `p=` tag, or more than one DMARC record, as invalid
 - Probes DKIM at common selectors (google, selector1, selector2, default, k1, s1, s2, dkim, mail); a custom selector will not be found
 - For domains with MX records, notes whether MTA-STS (`_mta-sts` TXT) and TLS-RPT (`_smtp._tls` TXT) are published
 

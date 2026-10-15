@@ -25,6 +25,12 @@ function gradeEmailSecurity(rootTxt,dmarcTxt){
     else if(/-all\b/i.test(spf[0])) notes.push("✅ SPF sıkı (-all)")
     else if(/\bredirect=\S+/i.test(spf[0])) notes.push(`↪️ SPF ${spf[0].match(/redirect=(\S+)/i)[1]} adresine yönlendiriliyor`)
     else notes.push("⚠️ SPF bir all mekanizmasıyla bitmiyor")
+    if(spf.length===1){
+        // RFC 7208 allows 10 DNS-querying terms; past that receivers return permerror. Only the top
+        // record is counted here (includes can add more), so this is a lower bound.
+        const lookups=(spf[0].match(/(?:^|\s)[+\-~?]?(?:include:|a\b|mx\b|ptr\b|exists:|redirect=)/gi)||[]).length
+        if(lookups>10) notes.push(`⚠️ SPF en az ${lookups} DNS sorgusu gerektiriyor (sınır 10, kayıt geçersiz sayılır)`)
+    }
 
     const dmarcRecords=joinTxt(dmarcTxt).filter(t=>t.toLowerCase().startsWith("v=dmarc1"))
     const dmarc=dmarcRecords[0]

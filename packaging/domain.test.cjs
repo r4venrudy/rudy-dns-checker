@@ -119,3 +119,11 @@ test('two DMARC records are reported as invalid', () => {
   const r = gradeEmailSecurity([['v=spf1 -all']], [['v=DMARC1; p=reject'], ['v=DMARC1; p=none']])
   assert.deepStrictEqual(r.notes, ['✅ SPF sıkı (-all)', "⚠️ Birden fazla DMARC kaydı var (alıcılar DMARC'ı yok sayar)"])
 })
+
+test('SPF over the 10 lookup limit is flagged', () => {
+  const includes = Array.from({ length: 11 }, (_, i) => `include:s${i}.example.com`).join(' ')
+  const r = gradeEmailSecurity([[`v=spf1 ${includes} -all`]], [['v=DMARC1; p=reject; rua=mailto:d@example.com']])
+  assert.ok(r.notes.includes('⚠️ SPF en az 11 DNS sorgusu gerektiriyor (sınır 10, kayıt geçersiz sayılır)'))
+  const ok = gradeEmailSecurity([['v=spf1 a mx ip4:192.0.2.1 include:_spf.google.com -all']], [])
+  assert.ok(!ok.notes.some(n => n.includes('DNS sorgusu')))
+})
