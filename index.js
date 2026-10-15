@@ -158,6 +158,9 @@ async function handleDomain(interaction){
     const ipv4=await Promise.all(A.map((ip,i)=>i<5
         ? dns.reverse(ip).then(names=>names[0] ? `${ip}  →  ${names[0]}` : ip,()=>ip)
         : ip))
+    const ipv6=await Promise.all(AAAA.map((ip,i)=>i<3
+        ? dns.reverse(ip).then(names=>names[0] ? `${ip}  →  ${names[0]}` : ip,()=>ip)
+        : ip))
 
     const summary=whoisHelpers.whoisSummary(whoisData?.results)
     const registrar=summary.registrar || "Bilinmiyor"
@@ -171,7 +174,7 @@ async function handleDomain(interaction){
         .setDescription("Aşağıda hedef domain için bulunan açık DNS ve WHOIS verileri yer almaktadır.")
         .addFields(...fitFields([
             { name:"IPv4 (PTR)", value:codeBlock(ipv4) },
-            { name:"IPv6", value:codeBlock(AAAA) },
+            { name:"IPv6 (PTR)", value:codeBlock(ipv6) },
             { name:"NS", value:codeBlock(NS) },
             { name:"MX", value:codeBlock(formatMx(MX)) },
             { name:"TXT", value:codeBlock(joinTxt(TXT)) },
