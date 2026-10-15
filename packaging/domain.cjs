@@ -115,6 +115,17 @@ function mailTransportNotes(mtaStsTxt, tlsRptTxt, bimiTxt=[]){
     return notes
 }
 
+// A CNAME to a hosting service whose site was deleted leaves the name claimable by anyone
+const TAKEOVER_SUFFIXES=[".github.io",".herokuapp.com",".herokudns.com",".s3.amazonaws.com",".cloudfront.net",".azurewebsites.net",".cloudapp.net",".trafficmanager.net",".blob.core.windows.net",".netlify.app",".surge.sh",".bitbucket.io",".ghost.io",".myshopify.com",".readthedocs.io"]
+
+function danglingCnameNote(cname,a,aaaa){
+    const target=String(cname[0]||"").replace(/\.$/,"").toLowerCase()
+    if(!target || a.length || aaaa.length) return null
+    return TAKEOVER_SUFFIXES.some(s=>target.endsWith(s))
+        ? `⚠️ CNAME ${target} adresine gidiyor ama çözülmüyor: alt alan adı ele geçirilebilir`
+        : null
+}
+
 // MX records by priority; a single "0 ." record (RFC 7505 null MX) means the domain takes no mail
 function formatMx(records){
     if(records.length===1 && (records[0].exchange===""||records[0].exchange===".")) return ["Null MX: bu domain e-posta kabul etmiyor"]
@@ -135,4 +146,4 @@ function fitFields(fields,budget=5500){
     })
 }
 
-module.exports = { inlineCode, normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, mailTransportNotes, DKIM_SELECTORS, summarizeDkim }
+module.exports = { danglingCnameNote, inlineCode, normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, mailTransportNotes, DKIM_SELECTORS, summarizeDkim }

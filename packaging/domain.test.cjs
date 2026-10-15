@@ -151,3 +151,11 @@ test('mailTransportNotes mentions BIMI only when published', () => {
   assert.ok(mailTransportNotes([], [], [['v=BIMI1; l=https://example.com/logo.svg']]).includes('✅ BIMI logosu yayınlanmış'))
   assert.strictEqual(mailTransportNotes([], []).length, 2)
 })
+
+test('danglingCnameNote flags an unresolved CNAME to a hosting service', () => {
+  const { danglingCnameNote } = require('./domain.cjs')
+  assert.match(danglingCnameNote(['old-site.github.io.'], [], []), /ele geçirilebilir/)
+  assert.strictEqual(danglingCnameNote(['old-site.github.io.'], ['185.199.108.153'], []), null)
+  assert.strictEqual(danglingCnameNote(['cdn.example.net'], [], []), null)
+  assert.strictEqual(danglingCnameNote([], [], []), null)
+})

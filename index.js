@@ -36,7 +36,7 @@ import runtimeConfig from './packaging/config.cjs'
 import whoisHelpers from './packaging/whois-summary.cjs'
 import domainHelpers from './packaging/domain.cjs'
 import cooldownHelpers from './packaging/cooldown.cjs'
-const { inlineCode, normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, mailTransportNotes, DKIM_SELECTORS, summarizeDkim } = domainHelpers
+const { danglingCnameNote, inlineCode, normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, mailTransportNotes, DKIM_SELECTORS, summarizeDkim } = domainHelpers
 const config = runtimeConfig.loadConfig({ token: 'DISCORD_TOKEN', clientId: 'CLIENT_ID' })
 if (process.argv.includes('--check-config')) { console.log('Configuration and dependencies ready'); process.exit(0) }
 
@@ -175,7 +175,7 @@ async function handleDomain(interaction){
             { name:"NS", value:codeBlock(NS) },
             { name:"MX", value:codeBlock(formatMx(MX)) },
             { name:"TXT", value:codeBlock(joinTxt(TXT)) },
-            { name:"CNAME", value:codeBlock(CNAME) },
+            { name:"CNAME", value:[codeBlock(CNAME), danglingCnameNote(CNAME,A,AAAA)].filter(Boolean).join("\n") },
             { name:"SOA", value:codeBlock(formatSoa(SOA)) },
             { name:"DNSSEC", value:dnssecNote(DS) },
             { name:"CAA", value:codeBlock(CAA.map(r=>`${r.critical?"!":""}${Object.entries(r).filter(([k])=>k!=="critical").map(([k,v])=>`${k} ${v}`).join(" ")}`)) },
