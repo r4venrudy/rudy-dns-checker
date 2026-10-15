@@ -114,3 +114,8 @@ test('code formatting survives backticks in record values', () => {
   assert.equal(block.match(/```/g).length, 2);
   assert.equal(inlineCode('Reg`istrar'), '`Regˋistrar`');
 });
+
+test('two DMARC records are reported as invalid', () => {
+  const r = gradeEmailSecurity([['v=spf1 -all']], [['v=DMARC1; p=reject'], ['v=DMARC1; p=none']])
+  assert.deepStrictEqual(r.notes, ['✅ SPF sıkı (-all)', "⚠️ Birden fazla DMARC kaydı var (alıcılar DMARC'ı yok sayar)"])
+})

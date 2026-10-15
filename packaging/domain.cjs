@@ -26,8 +26,11 @@ function gradeEmailSecurity(rootTxt,dmarcTxt){
     else if(/\bredirect=\S+/i.test(spf[0])) notes.push(`↪️ SPF ${spf[0].match(/redirect=(\S+)/i)[1]} adresine yönlendiriliyor`)
     else notes.push("⚠️ SPF bir all mekanizmasıyla bitmiyor")
 
-    const dmarc=joinTxt(dmarcTxt).find(t=>t.toLowerCase().startsWith("v=dmarc1"))
+    const dmarcRecords=joinTxt(dmarcTxt).filter(t=>t.toLowerCase().startsWith("v=dmarc1"))
+    const dmarc=dmarcRecords[0]
     if(!dmarc) notes.push("❌ DMARC kaydı yok")
+    // RFC 7489: with more than one DMARC record receivers ignore DMARC for the domain entirely
+    else if(dmarcRecords.length>1) notes.push("⚠️ Birden fazla DMARC kaydı var (alıcılar DMARC'ı yok sayar)")
     else{
         const policy=(dmarc.match(/;\s*p=(\w+)/i)||[])[1]?.toLowerCase()
         if(policy==="reject") notes.push("✅ DMARC p=reject")
