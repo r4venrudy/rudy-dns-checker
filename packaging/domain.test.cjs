@@ -134,3 +134,7 @@ test('a weaker DMARC subdomain policy is flagged', () => {
   const same = gradeEmailSecurity([['v=spf1 -all']], [['v=DMARC1; p=quarantine; sp=reject; rua=mailto:d@example.com']])
   assert.ok(!same.notes.some(n => n.includes('sp=')))
 })
+
+test('formatSoa keeps an escaped dot in the admin mailbox', () => {
+  assert.strictEqual(formatSoa({ nsname: 'ns1.example.com', hostmaster: 'john\\.doe.example.com', serial: 1 })[1], 'Yönetici: john.doe@example.com')
+})

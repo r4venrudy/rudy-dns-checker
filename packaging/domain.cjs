@@ -84,7 +84,8 @@ function summarizeDkim(results){
 // dns.resolve(domain,"SOA") gives one object; show the primary NS, the admin mailbox as an address, and the serial
 function formatSoa(soa){
     if(!soa || !soa.nsname) return []
-    const admin=String(soa.hostmaster||"").replace(".","@")
+    // the first unescaped dot separates the mailbox; "john\\.doe.example.com" is john.doe@example.com
+    const admin=String(soa.hostmaster||"").replace(/^((?:[^.\\]|\\.)*)\./,"$1@").replace(/\\\./g,".")
     return [`Birincil NS: ${soa.nsname}`, `Yönetici: ${admin}`, `Seri: ${soa.serial}`]
 }
 
