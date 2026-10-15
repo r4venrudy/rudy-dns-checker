@@ -131,6 +131,7 @@ async function handleDomain(interaction){
         DKIM,
         MTASTS,
         TLSRPT,
+        BIMI,
         DS,
         whoisData
     ] = await Promise.all([
@@ -146,6 +147,7 @@ async function handleDomain(interaction){
         Promise.all(DKIM_SELECTORS.map(async selector=>({ selector, txt:await safeResolve(`${selector}._domainkey.${domain}`,"TXT") }))),
         safeResolve(`_mta-sts.${domain}`,"TXT"),
         safeResolve(`_smtp._tls.${domain}`,"TXT"),
+        safeResolve(`default._bimi.${domain}`,"TXT"),
         fetchDs(domain),
         whoisHelpers.lookupRegistered(domain,name=>whoiser(name,{ timeout:10000 }))
     ])
@@ -177,7 +179,7 @@ async function handleDomain(interaction){
             { name:"SOA", value:codeBlock(formatSoa(SOA)) },
             { name:"DNSSEC", value:dnssecNote(DS) },
             { name:"CAA", value:codeBlock(CAA.map(r=>`${r.critical?"!":""}${Object.entries(r).filter(([k])=>k!=="critical").map(([k,v])=>`${k} ${v}`).join(" ")}`)) },
-            { name:"E-posta Güvenliği (SPF / DMARC / DKIM / MTA-STS)", value:[...email.notes, summarizeDkim(DKIM), ...(receivesMail ? mailTransportNotes(MTASTS,TLSRPT) : [])].join("\n") },
+            { name:"E-posta Güvenliği (SPF / DMARC / DKIM / MTA-STS)", value:[...email.notes, summarizeDkim(DKIM), ...(receivesMail ? mailTransportNotes(MTASTS,TLSRPT,BIMI) : [])].join("\n") },
             // for a subdomain the WHOIS data belongs to the registered name it sits under
             { name:whoisData && whoisData.name!==domain ? `Registrar (${whoisData.name})` : "Registrar", value:inlineCode(registrar) },
             { name:"Oluşturulma", value:inlineCode(created), inline:true },

@@ -146,3 +146,8 @@ test('summarizeDkim separates revoked keys (empty p=)', () => {
   ])
   assert.strictEqual(note, '✅ DKIM anahtarı bulundu: google\nℹ️ İptal edilmiş DKIM anahtarı: s1')
 })
+
+test('mailTransportNotes mentions BIMI only when published', () => {
+  assert.ok(mailTransportNotes([], [], [['v=BIMI1; l=https://example.com/logo.svg']]).includes('✅ BIMI logosu yayınlanmış'))
+  assert.strictEqual(mailTransportNotes([], []).length, 2)
+})

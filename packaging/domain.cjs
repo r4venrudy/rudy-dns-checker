@@ -104,12 +104,15 @@ function dnssecNote(doh){
 
 // MTA-STS (_mta-sts TXT, "v=STSv1") makes senders require TLS; TLS-RPT (_smtp._tls TXT, "v=TLSRPTv1")
 // asks them to report TLS failures. Only worth checking when the domain receives mail.
-function mailTransportNotes(mtaStsTxt, tlsRptTxt){
+// BIMI (default._bimi TXT, "v=BIMI1") shows the brand logo in Gmail/Yahoo; only listed when present
+function mailTransportNotes(mtaStsTxt, tlsRptTxt, bimiTxt=[]){
     const has=(txt,prefix)=>joinTxt(txt).some(t=>t.toLowerCase().startsWith(prefix))
-    return [
+    const notes=[
         has(mtaStsTxt,"v=stsv1") ? "✅ MTA-STS kaydı var" : "ℹ️ MTA-STS yok (TLS zorunlu değil)",
         has(tlsRptTxt,"v=tlsrptv1") ? "✅ TLS-RPT raporlaması açık" : "ℹ️ TLS-RPT yok"
     ]
+    if(has(bimiTxt,"v=bimi1")) notes.push("✅ BIMI logosu yayınlanmış")
+    return notes
 }
 
 // MX records by priority; a single "0 ." record (RFC 7505 null MX) means the domain takes no mail

@@ -34,7 +34,7 @@ A Discord `/domain` bot that resolves public DNS records, queries WHOIS and summ
 - Warns when DMARC `pct` is below 100, when no `rua` reporting address is set and when `sp=` gives subdomains a weaker policy than `p=`
 - Reports a DMARC record without a valid `p=` tag, or more than one DMARC record, as invalid
 - Probes DKIM at common selectors (google, selector1, selector2, default, k1, s1, s2, dkim, mail); a custom selector will not be found
-- For domains with MX records, notes whether MTA-STS (`_mta-sts` TXT) and TLS-RPT (`_smtp._tls` TXT) are published
+- For domains with MX records, notes whether MTA-STS (`_mta-sts` TXT) and TLS-RPT (`_smtp._tls` TXT) are published, and a BIMI logo record (`default._bimi`) when there is one
 
 These are record summaries, not a complete SPF evaluation. The bot does not test whether a real message passes SPF, DKIM or DMARC.
 
