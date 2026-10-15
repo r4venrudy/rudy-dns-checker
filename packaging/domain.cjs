@@ -29,6 +29,8 @@ function gradeEmailSecurity(rootTxt,dmarcTxt){
         // RFC 7208 allows 10 DNS-querying terms; past that receivers return permerror. Only the top
         // record is counted here (includes can add more), so this is a lower bound.
         const lookups=(spf[0].match(/(?:^|\s)[+\-~?]?(?:include:|a\b|mx\b|ptr\b|exists:|redirect=)/gi)||[]).length
+        // RFC 7208 5.5: "ptr" is slow, unreliable and SHOULD NOT be used; many receivers ignore it
+        if(/(?:^|\s)[+\-~?]?ptr\b/i.test(spf[0])) notes.push("⚠️ SPF kullanımdan kalkmış ptr mekanizmasını içeriyor")
         if(lookups>10) notes.push(`⚠️ SPF en az ${lookups} DNS sorgusu gerektiriyor (sınır 10, kayıt geçersiz sayılır)`)
     }
 

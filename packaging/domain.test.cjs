@@ -159,3 +159,9 @@ test('danglingCnameNote flags an unresolved CNAME to a hosting service', () => {
   assert.strictEqual(danglingCnameNote(['cdn.example.net'], [], []), null)
   assert.strictEqual(danglingCnameNote([], [], []), null)
 })
+
+test('SPF ptr mechanism is flagged as deprecated', () => {
+  const r = gradeEmailSecurity([['v=spf1 ptr:example.com -all']], [])
+  assert.ok(r.notes.includes('⚠️ SPF kullanımdan kalkmış ptr mekanizmasını içeriyor'))
+  assert.ok(!gradeEmailSecurity([['v=spf1 mx -all']], []).notes.some(n => n.includes('ptr')))
+})
