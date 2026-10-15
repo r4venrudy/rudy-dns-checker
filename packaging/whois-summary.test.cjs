@@ -47,3 +47,16 @@ test('expiryText warns before expiry and reports an expired domain', () => {
   assert.strictEqual(expiryText('before Aug-1996', now), 'before Aug-1996');
   assert.strictEqual(expiryText(null, now), null);
 });
+
+test('lookupRegistered walks up from a subdomain to the registered name', async () => {
+  const { lookupRegistered } = require('./whois-summary.cjs');
+  const asked = [];
+  const lookup = async name => {
+    asked.push(name);
+    return name === 'example.com.tr' ? { 'whois.trabis.gov.tr': { 'Registrar': 'Example Registrar' } } : {};
+  };
+  const found = await lookupRegistered('www.shop.example.com.tr', lookup);
+  assert.equal(found.name, 'example.com.tr');
+  assert.deepEqual(asked, ['www.shop.example.com.tr', 'shop.example.com.tr', 'example.com.tr']);
+  assert.equal(await lookupRegistered('nothing.example', async () => { throw new Error('timeout'); }), null);
+});

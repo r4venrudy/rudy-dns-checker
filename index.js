@@ -143,7 +143,7 @@ client.on("interactionCreate",async interaction=>{
         safeResolve(`_mta-sts.${domain}`,"TXT"),
         safeResolve(`_smtp._tls.${domain}`,"TXT"),
         fetchDs(domain),
-        whoiser(domain,{ timeout:10000 }).catch(()=>null)
+        whoisHelpers.lookupRegistered(domain,name=>whoiser(name,{ timeout:10000 }))
     ])
     const email=gradeEmailSecurity(TXT,DMARC)
     // reverse DNS for the first few addresses often names the hosting provider (e.g. ec2-...amazonaws.com)
@@ -151,7 +151,7 @@ client.on("interactionCreate",async interaction=>{
         ? dns.reverse(ip).then(names=>names[0] ? `${ip}  →  ${names[0]}` : ip,()=>ip)
         : ip))
 
-    const summary=whoisHelpers.whoisSummary(whoisData)
+    const summary=whoisHelpers.whoisSummary(whoisData?.results)
     const registrar=summary.registrar || "Bilinmiyor"
     const created=whoisHelpers.formatDate(summary.created) || "Bilinmiyor"
     const expires=whoisHelpers.expiryText(summary.expires) || "Bilinmiyor"
@@ -172,7 +172,8 @@ client.on("interactionCreate",async interaction=>{
             { name:"DNSSEC", value:dnssecNote(DS) },
             { name:"CAA", value:codeBlock(CAA.map(r=>`${r.critical?"!":""}${Object.entries(r).filter(([k])=>k!=="critical").map(([k,v])=>`${k} ${v}`).join(" ")}`)) },
             { name:"E-posta Güvenliği (SPF / DMARC / DKIM / MTA-STS)", value:[...email.notes, summarizeDkim(DKIM), ...(MX.length ? mailTransportNotes(MTASTS,TLSRPT) : [])].join("\n") },
-            { name:"Registrar", value:`\`${registrar}\`` },
+            // for a subdomain the WHOIS data belongs to the registered name it sits under
+            { name:whoisData && whoisData.name!==domain ? `Registrar (${whoisData.name})` : "Registrar", value:`\`${registrar}\`` },
             { name:"Oluşturulma", value:`\`${created}\``, inline:true },
             { name:"Bitiş", value:`\`${expires}\``, inline:true },
             { name:"Güncelleme", value:`\`${whoisHelpers.formatDate(summary.updated) || "Bilinmiyor"}\``, inline:true },

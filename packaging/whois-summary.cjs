@@ -59,4 +59,19 @@ function whoisSummary(results) {
   };
 }
 
-module.exports = { whoisSummary, formatDate, daysUntil, expiryText };
+// WHOIS only knows registered names, so "www.example.com" returns nothing. Walk up one label at a
+// time (keeping at least two, since a public suffix like "com.tr" has no record either) until a
+// lookup returns a registrar or creation date. Resolves to { name, results } or null.
+async function lookupRegistered(domain, lookup) {
+  const labels = domain.split('.');
+  for (let i = 0; labels.length - i >= 2; i++) {
+    const name = labels.slice(i).join('.');
+    const results = await lookup(name).catch(() => null);
+    const summary = whoisSummary(results);
+    if (summary.registrar || summary.created) return { name, results };
+    if (labels.length - i === 2) break;
+  }
+  return null;
+}
+
+module.exports = { whoisSummary, formatDate, daysUntil, expiryText, lookupRegistered };
