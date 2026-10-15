@@ -127,3 +127,10 @@ test('SPF over the 10 lookup limit is flagged', () => {
   const ok = gradeEmailSecurity([['v=spf1 a mx ip4:192.0.2.1 include:_spf.google.com -all']], [])
   assert.ok(!ok.notes.some(n => n.includes('DNS sorgusu')))
 })
+
+test('a weaker DMARC subdomain policy is flagged', () => {
+  const r = gradeEmailSecurity([['v=spf1 -all']], [['v=DMARC1; p=reject; sp=none; rua=mailto:d@example.com']])
+  assert.ok(r.notes.includes('⚠️ Alt alan adları için daha zayıf politika: sp=none'))
+  const same = gradeEmailSecurity([['v=spf1 -all']], [['v=DMARC1; p=quarantine; sp=reject; rua=mailto:d@example.com']])
+  assert.ok(!same.notes.some(n => n.includes('sp=')))
+})

@@ -45,6 +45,10 @@ function gradeEmailSecurity(rootTxt,dmarcTxt){
         else notes.push("⚠️ DMARC kaydında geçerli bir p= etiketi yok (kayıt geçersiz)")
         const pct=(dmarc.match(/;\s*pct=(\d+)/i)||[])[1]
         if(pct && Number(pct)<100) notes.push(`🟡 DMARC politikası e-postaların sadece %${pct}'ine uygulanıyor`)
+        // sp= overrides p= for subdomains; "p=reject; sp=none" leaves every subdomain spoofable
+        const sp=(dmarc.match(/;\s*sp=(\w+)/i)||[])[1]?.toLowerCase()
+        const rank={ none:0, quarantine:1, reject:2 }
+        if(sp in rank && policy in rank && rank[sp]<rank[policy]) notes.push(`⚠️ Alt alan adları için daha zayıf politika: sp=${sp}`)
         if(!/;\s*rua=/i.test(dmarc)) notes.push("ℹ️ DMARC rapor adresi (rua) yok")
     }
     return { spf:spf[0]||null, dmarc:dmarc||null, notes }
