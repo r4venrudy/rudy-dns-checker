@@ -16,7 +16,9 @@ function joinTxt(records){
 // SPF ve DMARC kayıtlarını değerlendirir (e-posta sahteciliğine karşı koruma)
 function gradeEmailSecurity(rootTxt,dmarcTxt){
     const notes=[]
-    const spf=joinTxt(rootTxt).filter(t=>t.toLowerCase().startsWith("v=spf1"))
+    // RFC 7208 4.5: the version must be exactly "v=spf1" followed by a space or the end, so
+    // "v=spf10" or "v=spf1x" are not SPF records
+    const spf=joinTxt(rootTxt).filter(t=>/^v=spf1(?:\s|$)/i.test(t))
     if(spf.length===0) notes.push("❌ SPF kaydı yok")
     else if(spf.length>1) notes.push("⚠️ Birden fazla SPF kaydı var (geçersiz)")
     // A bare "all" has the default "+" qualifier, so it is as permissive as +all
@@ -34,7 +36,7 @@ function gradeEmailSecurity(rootTxt,dmarcTxt){
         if(lookups>10) notes.push(`⚠️ SPF en az ${lookups} DNS sorgusu gerektiriyor (sınır 10, kayıt geçersiz sayılır)`)
     }
 
-    const dmarcRecords=joinTxt(dmarcTxt).filter(t=>t.toLowerCase().startsWith("v=dmarc1"))
+    const dmarcRecords=joinTxt(dmarcTxt).filter(t=>/^v=dmarc1\s*(?:;|$)/i.test(t))
     const dmarc=dmarcRecords[0]
     if(!dmarc) notes.push("❌ DMARC kaydı yok")
     // RFC 7489: with more than one DMARC record receivers ignore DMARC for the domain entirely

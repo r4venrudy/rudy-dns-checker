@@ -26,6 +26,9 @@ test('missing and permissive records are flagged', () => {
   assert.deepStrictEqual(gradeEmailSecurity([], []).notes, ['❌ SPF kaydı yok', '❌ DMARC kaydı yok'])
   assert.match(gradeEmailSecurity([['v=spf1 +all']], []).notes[0], /gevşek/)
   assert.match(gradeEmailSecurity([['v=spf1 mx all']], []).notes[0], /gevşek/)
+  // only an exact version tag counts as SPF / DMARC
+  assert.deepStrictEqual(gradeEmailSecurity([['v=spf10 -all']], [['v=DMARC10; p=reject']]).notes, ['❌ SPF kaydı yok', '❌ DMARC kaydı yok'])
+  assert.match(gradeEmailSecurity([['v=spf1']], [['v=DMARC1 ;p=reject;rua=mailto:a@b.c']]).notes.join(), /DMARC p=reject/)
   assert.match(gradeEmailSecurity([['v=spf1 -all'], ['v=spf1 ~all']], []).notes[0], /Birden fazla/)
 })
 
