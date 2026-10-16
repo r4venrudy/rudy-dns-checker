@@ -69,7 +69,7 @@ A successful check prints `Configuration and dependencies ready` and exits. It c
 node --env-file=.env index.js
 ```
 
-Invite the bot with `bot` and `applications.commands` scopes, then run `/domain example.com`.
+Invite the bot with `bot` and `applications.commands` scopes, then run `/domain example.com`; add `gizli:True` to get a result only you can see.
 
 Existing local `config.json` files remain supported with `token` and `clientId` keys. Exported environment variables take priority over the JSON values; `RUDY_CONFIG` selects another JSON file. Do not commit either credential file.
 

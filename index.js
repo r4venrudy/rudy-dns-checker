@@ -57,6 +57,10 @@ const commands = [
              // longest valid hostname is 253 characters; leave room for a pasted https:// prefix and path
              .setMaxLength(300)
         )
+        .addBooleanOption(o =>
+            o.setName("gizli")
+             .setDescription("Sonucu yalnızca siz görün (varsayılan: herkes görür)")
+        )
         .toJSON()
 ]
 
@@ -115,7 +119,8 @@ async function handleDomain(interaction){
         await interaction.reply({ content:`⏳ Bir sonraki sorgu için ${Math.ceil(wait/1000)} sn bekleyin.`, ephemeral:true })
         return
     }
-    await interaction.deferReply()
+    // a lookup can reveal what someone is investigating, so let them keep it to themselves
+    await interaction.deferReply({ ephemeral:interaction.options.getBoolean("gizli") ?? false })
 
     try{
     const [
