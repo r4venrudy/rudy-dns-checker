@@ -146,7 +146,7 @@ async function handleDomain(interaction){
         safeResolve(domain,"MX"),
         safeResolve(domain,"TXT"),
         safeResolve(domain,"CNAME"),
-        safeResolve(domain,"CAA"),
+        domainHelpers.effectiveCaa(domain,name=>safeResolve(name,"CAA")),
         safeResolve(domain,"SOA"),
         safeResolve(`_dmarc.${domain}`,"TXT"),
         Promise.all(DKIM_SELECTORS.map(async selector=>({ selector, txt:await safeResolve(`${selector}._domainkey.${domain}`,"TXT") }))),
@@ -186,7 +186,7 @@ async function handleDomain(interaction){
             { name:"CNAME", value:[codeBlock(CNAME), danglingCnameNote(CNAME,A,AAAA)].filter(Boolean).join("\n") },
             { name:"SOA", value:codeBlock(formatSoa(SOA)) },
             { name:"DNSSEC", value:dnssecNote(DS) },
-            { name:"CAA", value:codeBlock(CAA.map(r=>`${r.critical?"!":""}${Object.entries(r).filter(([k])=>k!=="critical").map(([k,v])=>`${k} ${v}`).join(" ")}`)) },
+            { name:"CAA", value:domainHelpers.formatCaa(domain,CAA) },
             { name:"E-posta Güvenliği (SPF / DMARC / DKIM / MTA-STS)", value:[...email.notes, summarizeDkim(DKIM), ...(receivesMail ? mailTransportNotes(MTASTS,TLSRPT,BIMI) : [])].join("\n") },
             // for a subdomain the WHOIS data belongs to the registered name it sits under
             { name:whoisData && whoisData.name!==domain ? `Registrar (${whoisData.name})` : "Registrar", value:inlineCode(registrar) },

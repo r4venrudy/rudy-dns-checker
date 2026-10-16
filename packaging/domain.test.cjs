@@ -1,6 +1,6 @@
 const test = require('node:test')
 const assert = require('node:assert')
-const { normalizeDomain, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, mailTransportNotes, summarizeDkim } = require('./domain.cjs')
+const { effectiveCaa, formatCaa, normalizeDomain, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, mailTransportNotes, summarizeDkim } = require('./domain.cjs')
 
 test('normalizeDomain strips scheme, path, port and trailing dot', () => {
   assert.strictEqual(normalizeDomain('https://Example.com/path?q=1'), 'example.com')
@@ -164,4 +164,14 @@ test('SPF ptr mechanism is flagged as deprecated', () => {
   const r = gradeEmailSecurity([['v=spf1 ptr:example.com -all']], [])
   assert.ok(r.notes.includes('⚠️ SPF kullanımdan kalkmış ptr mekanizmasını içeriyor'))
   assert.ok(!gradeEmailSecurity([['v=spf1 mx -all']], []).notes.some(n => n.includes('ptr')))
+})
+
+test('effectiveCaa climbs to the closest parent with records', async () => {
+  const zone = { 'example.com': [{ critical: 0, issue: 'letsencrypt.org' }] }
+  const lookup = async name => zone[name] || []
+  const caa = await effectiveCaa('www.shop.example.com', lookup)
+  assert.strictEqual(caa.name, 'example.com')
+  assert.match(formatCaa('www.shop.example.com', caa), /issue letsencrypt\.org[\s\S]*example\.com kayıtları geçerli/)
+  const none = await effectiveCaa('other.test', async () => [])
+  assert.match(formatCaa('other.test', none), /CAA yok/)
 })

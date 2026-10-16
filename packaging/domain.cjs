@@ -117,6 +117,24 @@ function mailTransportNotes(mtaStsTxt, tlsRptTxt, bimiTxt=[]){
     return notes
 }
 
+// CAA is looked up on the name and then each parent (RFC 8659 tree climbing): the closest set of
+// records decides which CAs may issue. `lookup(name)` returns that name's CAA records.
+async function effectiveCaa(domain,lookup){
+    const labels=domain.split(".")
+    for(let i=0;i<labels.length-1;i++){
+        const name=labels.slice(i).join(".")
+        const records=await lookup(name)
+        if(records.length) return { name, records }
+    }
+    return { name:null, records:[] }
+}
+
+function formatCaa(domain,caa){
+    if(!caa.records.length) return "ℹ️ CAA yok: herhangi bir sertifika otoritesi bu ad için sertifika verebilir"
+    const lines=caa.records.map(r=>`${r.critical?"!":""}${Object.entries(r).filter(([k])=>k!=="critical").map(([k,v])=>`${k} ${v}`).join(" ")}`)
+    return codeBlock(lines)+(caa.name!==domain ? `\n↳ ${caa.name} kayıtları geçerli` : "")
+}
+
 // A CNAME to a hosting service whose site was deleted leaves the name claimable by anyone
 const TAKEOVER_SUFFIXES=[".github.io",".herokuapp.com",".herokudns.com",".s3.amazonaws.com",".cloudfront.net",".azurewebsites.net",".cloudapp.net",".trafficmanager.net",".blob.core.windows.net",".netlify.app",".surge.sh",".bitbucket.io",".ghost.io",".myshopify.com",".readthedocs.io"]
 
@@ -148,4 +166,4 @@ function fitFields(fields,budget=5500){
     })
 }
 
-module.exports = { danglingCnameNote, inlineCode, normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, mailTransportNotes, DKIM_SELECTORS, summarizeDkim }
+module.exports = { effectiveCaa, formatCaa, danglingCnameNote, inlineCode, normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, mailTransportNotes, DKIM_SELECTORS, summarizeDkim }
