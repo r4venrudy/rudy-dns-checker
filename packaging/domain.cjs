@@ -5,8 +5,8 @@ const { domainToASCII } = require('node:url')
 function normalizeDomain(input){
     const raw=String(input||"").trim().toLowerCase()
         .replace(/^[a-z]+:\/\//,"").split(/[/?#]/)[0].replace(/:\d+$/,"").replace(/\.$/,"")
-    const d=/[^\x00-\x7f]/.test(raw) ? domainToASCII(raw) : raw
-    return /^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(d) ? d : null
+    const d=domainToASCII(raw)
+    return /^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z]{2,63}|xn--[a-z0-9](?:[a-z0-9-]{0,57}[a-z0-9])?)$/.test(d) ? d : null
 }
 
 function joinTxt(records){
