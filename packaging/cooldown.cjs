@@ -18,7 +18,7 @@ function createCooldown(ms, now = () => Date.now()) {
 // COOLDOWN_SECONDS: empty, negative or non-numeric values fall back to the default
 // (Number('abc') is NaN, which silently disabled the cooldown)
 function secondsFromEnv(value, fallback) {
-  if (value === undefined || value === '') return fallback;
+  if (value === undefined || String(value).trim() === '') return fallback;
   const n = Number(value);
   return Number.isFinite(n) && n >= 0 ? n : fallback;
 }
