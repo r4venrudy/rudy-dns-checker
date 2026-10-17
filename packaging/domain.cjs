@@ -98,9 +98,14 @@ const DKIM_SELECTORS=["google","selector1","selector2","default","k1","s1","s2",
 
 // results: [{ selector, txt: [...] }] -> one note line
 function summarizeDkim(results){
-    const keys=results.map(r=>({ selector:r.selector, txt:joinTxt(r.txt).find(t=>/(^|;)\s*(v=dkim1|p=)/i.test(t)) })).filter(r=>r.txt)
+    const keys=results.map(r=>({ selector:r.selector, txt:joinTxt(r.txt).find(t=>{
+        const tags=t.split(';').map(part=>part.trim()).filter(Boolean)
+        const p=tags.filter(part=>/^p\s*=/i.test(part))
+        const versions=tags.filter(part=>/^v\s*=/i.test(part))
+        return p.length===1 && (versions.length===0 || (versions.length===1 && /^v\s*=\s*DKIM1$/i.test(versions[0])))
+    }) })).filter(r=>r.txt)
     // an empty p= means the key was revoked (RFC 6376 3.6.1); mail signed with it fails DKIM
-    const revoked=keys.filter(k=>/(^|;)\s*p=\s*(;|$)/i.test(k.txt)).map(k=>k.selector)
+    const revoked=keys.filter(k=>/(^|;)\s*p\s*=\s*(;|$)/i.test(k.txt)).map(k=>k.selector)
     const active=keys.map(k=>k.selector).filter(s=>!revoked.includes(s))
     const notes=[]
     if(active.length) notes.push(`✅ DKIM anahtarı bulundu: ${active.join(", ")}`)
