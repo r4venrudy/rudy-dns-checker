@@ -83,7 +83,7 @@ function codeBlock(lines){
     if(!lines.length) return "Yok"
     // TXT and CAA values are written by the domain owner; a "```" inside would close the block early
     let body=lines.join("\n").replace(/```/g,"`\u200b`\u200b`")
-    if(body.length>1000) body=body.slice(0,999)+"…"
+    if(body.length>1000) body=truncateText(body,999)+"…"
     return `\`\`\`\n${body}\n\`\`\``
 }
 
@@ -180,16 +180,33 @@ function formatMx(records){
 
 // Discord also rejects a whole embed over 6000 characters; several long record sets can pass that
 // even when each field fits, so later fields are shortened once the budget is spent.
+function truncateText(text,limit){
+    let result=text.slice(0,Math.max(0,limit))
+    if(/[\uD800-\uDBFF]$/.test(result)) result=result.slice(0,-1)
+    return result
+}
+
 function fitFields(fields,budget=5500){
+    if(!Number.isFinite(budget)||budget<0) throw new RangeError('Invalid embed budget')
     let used=0
-    return fields.map(f=>{
-        const size=f.name.length+f.value.length
-        if(used+size<=budget){ used+=size; return f }
-        const room=budget-used-f.name.length-8
-        const value=room>20 ? codeBlock([f.value.replace(/```\n?/g,"").slice(0,room)]) : "Kısaltıldı"
-        used+=f.name.length+value.length
-        return { ...f, value }
-    })
+    const result=[]
+    for(const field of fields.slice(0,25)){
+        const room=Math.floor(budget)-used
+        if(room<2) break
+        const name=truncateText(String(field.name||'—'),Math.min(256,room-1))||'—'
+        const available=Math.min(1024,room-name.length)
+        if(available<1) break
+        const raw=String(field.value||'—')
+        let value=raw
+        if(raw.length>available){
+            if(raw.startsWith('```\n') && raw.endsWith('\n```') && available>=9){
+                value='```\n'+truncateText(raw.slice(4,-4),available-9)+'…\n```'
+            }else value=truncateText(raw,available-1)+'…'
+        }
+        result.push({...field,name,value})
+        used+=name.length+value.length
+    }
+    return result
 }
 
 module.exports = { effectiveCaa, formatCaa, danglingCnameNote, inlineCode, normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, mailTransportNotes, DKIM_SELECTORS, summarizeDkim }
