@@ -4,7 +4,7 @@
 function pick(results, key) {
   for (const server of Object.values(results || {})) {
     const value = server && server[key];
-    const first = Array.isArray(value) ? value[0] : value;
+    const first = Array.isArray(value) ? value.find(v => typeof v === 'string' && v.trim()) : value;
     if (typeof first === 'string' && first.trim()) return first.trim();
   }
   return null;
