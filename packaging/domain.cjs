@@ -124,7 +124,7 @@ function formatSoa(soa){
 // Node's resolver cannot ask for DS records, so DNSSEC is checked with a DNS-over-HTTPS JSON answer
 // (Cloudflare / Google format). A DS record at the parent zone means the domain is signed.
 function dnssecNote(doh){
-    if(!doh || typeof doh.Status!=="number") return "ℹ️ DNSSEC kontrol edilemedi"
+    if(!doh || ![0,3].includes(doh.Status)) return "ℹ️ DNSSEC kontrol edilemedi"
     const ds=(doh.Answer||[]).filter(a=>a.type===43)
     if(doh.Status===0 && ds.length) return `✅ DNSSEC etkin (${ds.length} DS kaydı)`
     return "⚠️ DNSSEC yok (DS kaydı bulunamadı)"
