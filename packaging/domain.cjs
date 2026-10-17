@@ -174,7 +174,7 @@ function danglingCnameNote(cname,a,aaaa){
 
 // MX records by priority; a single "0 ." record (RFC 7505 null MX) means the domain takes no mail
 function formatMx(records){
-    if(records.length===1 && (records[0].exchange===""||records[0].exchange===".")) return ["Null MX: bu domain e-posta kabul etmiyor"]
+    if(records.length===1 && records[0].priority===0 && (records[0].exchange===""||records[0].exchange===".")) return ["Null MX: bu domain e-posta kabul etmiyor"]
     return [...records].sort((a,b)=>a.priority-b.priority).map(x=>`${x.priority} ${x.exchange}`)
 }
 
