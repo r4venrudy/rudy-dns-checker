@@ -134,7 +134,7 @@ function dnssecNote(doh){
 // asks them to report TLS failures. Only worth checking when the domain receives mail.
 // BIMI (default._bimi TXT, "v=BIMI1") shows the brand logo in Gmail/Yahoo; only listed when present
 function mailTransportNotes(mtaStsTxt, tlsRptTxt, bimiTxt=[]){
-    const has=(txt,prefix)=>joinTxt(txt).some(t=>t.toLowerCase().startsWith(prefix))
+    const has=(txt,prefix)=>joinTxt(txt).some(t=>new RegExp('^'+prefix+'(?:\\s*;|\\s*$)','i').test(t))
     const notes=[
         has(mtaStsTxt,"v=stsv1") ? "✅ MTA-STS kaydı var" : "ℹ️ MTA-STS yok (TLS zorunlu değil)",
         has(tlsRptTxt,"v=tlsrptv1") ? "✅ TLS-RPT raporlaması açık" : "ℹ️ TLS-RPT yok"
