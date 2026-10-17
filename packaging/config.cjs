@@ -2,7 +2,8 @@ const fs = require('node:fs');
 function loadConfig(spec, options = {}) {
   const env = options.env || process.env;
   const filename = options.filename || env.RUDY_CONFIG || 'config.json';
-  const data = fs.existsSync(filename) ? JSON.parse(fs.readFileSync(filename, 'utf8')) : {};
+  const data = fs.existsSync(filename) ? JSON.parse(fs.readFileSync(filename, 'utf8').replace(/^\uFEFF/, '')) : {};
+  if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('Configuration must be a JSON object');
   const result = {};
   for (const [key, variable] of Object.entries(spec)) result[key] = env[variable] || data[key] || '';
   const missing = Object.keys(result).filter(key => typeof result[key] !== 'string' || !result[key].trim() || /^(YOUR_|DISCORD TOKEN|YOUR CLIENT)/i.test(result[key]));
