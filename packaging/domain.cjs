@@ -42,18 +42,37 @@ function gradeEmailSecurity(rootTxt,dmarcTxt){
     // RFC 7489: with more than one DMARC record receivers ignore DMARC for the domain entirely
     else if(dmarcRecords.length>1) notes.push("⚠️ Birden fazla DMARC kaydı var (alıcılar DMARC'ı yok sayar)")
     else{
-        const policy=(dmarc.match(/;\s*p=(\w+)/i)||[])[1]?.toLowerCase()
+        // RFC 7489 section 6.4: parse complete tag values, reject duplicates.
+        const tags=new Map()
+        let invalid=false
+        for(const part of dmarc.split(';').slice(1)){
+            if(!part.trim()) continue
+            const match=part.match(/^\s*([a-z][a-z0-9]*)\s*=\s*(.*?)\s*$/i)
+            if(!match){ invalid=true; continue }
+            const key=match[1].toLowerCase()
+            if(tags.has(key)) invalid=true
+            tags.set(key,match[2])
+        }
+        const policy=tags.get('p')?.toLowerCase()
+        const pct=tags.get('pct')
+        const sp=tags.get('sp')?.toLowerCase()
+        if(pct!==undefined && (!/^\d{1,3}$/.test(pct) || Number(pct)>100)) invalid=true
+        if(sp!==undefined && !['none','quarantine','reject'].includes(sp)) invalid=true
+        if(invalid){
+            notes.push("⚠️ DMARC etiketleri geçersiz (yinelenen etiket veya bozuk değer)")
+            return { spf:spf[0]||null, dmarc, notes }
+        }
         if(policy==="reject") notes.push("✅ DMARC p=reject")
         else if(policy==="quarantine") notes.push("🟡 DMARC p=quarantine")
         else if(policy==="none") notes.push("⚠️ DMARC p=none (sadece izleme)")
         else notes.push("⚠️ DMARC kaydında geçerli bir p= etiketi yok (kayıt geçersiz)")
-        const pct=(dmarc.match(/;\s*pct=(\d+)/i)||[])[1]
+        // pct has already been validated above.
         if(pct && Number(pct)<100) notes.push(`🟡 DMARC politikası e-postaların sadece %${pct}'ine uygulanıyor`)
         // sp= overrides p= for subdomains; "p=reject; sp=none" leaves every subdomain spoofable
-        const sp=(dmarc.match(/;\s*sp=(\w+)/i)||[])[1]?.toLowerCase()
+        // sp has already been validated above.
         const rank={ none:0, quarantine:1, reject:2 }
         if(sp in rank && policy in rank && rank[sp]<rank[policy]) notes.push(`⚠️ Alt alan adları için daha zayıf politika: sp=${sp}`)
-        if(!/;\s*rua=/i.test(dmarc)) notes.push("ℹ️ DMARC rapor adresi (rua) yok")
+        if(!tags.get('rua')) notes.push("ℹ️ DMARC rapor adresi (rua) yok")
     }
     return { spf:spf[0]||null, dmarc:dmarc||null, notes }
 }
