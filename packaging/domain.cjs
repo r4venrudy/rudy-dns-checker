@@ -125,8 +125,9 @@ function formatSoa(soa){
 // (Cloudflare / Google format). A DS record at the parent zone means the domain is signed.
 function dnssecNote(doh){
     if(!doh || ![0,3].includes(doh.Status)) return "ℹ️ DNSSEC kontrol edilemedi"
+    if(doh.Status===3) return "ℹ️ DNS adı bulunamadı; DNSSEC durumu belirlenemedi"
     const ds=(doh.Answer||[]).filter(a=>a.type===43)
-    if(doh.Status===0 && ds.length) return `✅ DNSSEC etkin (${ds.length} DS kaydı)`
+    if(ds.length) return `✅ DNSSEC etkin (${ds.length} DS kaydı)`
     return "⚠️ DNSSEC yok (DS kaydı bulunamadı)"
 }
 

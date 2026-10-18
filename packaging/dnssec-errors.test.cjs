@@ -6,3 +6,6 @@ test('resolver failures are unknown rather than proof of missing DNSSEC',()=>{
  assert.match(n({Status:0,Answer:[]}),/DNSSEC yok/);
  assert.match(n({Status:0,Answer:[{type:43,data:'x'}]}),/DS kaydı/);
 });
+test('NXDOMAIN is not reported as an unsigned zone',()=>{
+ assert.match(n({Status:3,AD:true}),/DNSSEC durumu belirlenemedi/);
+});

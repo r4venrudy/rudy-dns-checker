@@ -101,7 +101,7 @@ test('formatSoa shows the primary NS, admin address and serial', () => {
 test('dnssecNote reads a DNS-over-HTTPS DS answer', () => {
   assert.match(dnssecNote({ Status: 0, AD: true, Answer: [{ name: 'cloudflare.com.', type: 43, data: '2371 13 2 32996839a6d8' }] }), /etkin \(1 DS/)
   assert.match(dnssecNote({ Status: 0, Answer: [] }), /DNSSEC yok/)
-  assert.match(dnssecNote({ Status: 3 }), /DNSSEC yok/)
+  assert.match(dnssecNote({ Status: 3 }), /DNSSEC durumu belirlenemedi/)
   assert.match(dnssecNote(null), /kontrol edilemedi/)
 })
 
