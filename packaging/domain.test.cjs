@@ -17,6 +17,17 @@ test('normalizeDomain rejects non-hostnames', () => {
   for (const bad of ['not a domain', 'localhost', '-bad.com', '', null]) assert.strictEqual(normalizeDomain(bad), null)
 })
 
+test('normalizeDomain validates URL schemes, credentials and ports', () => {
+  assert.strictEqual(normalizeDomain('example.com:443'), 'example.com')
+  for (const bad of [
+    'example.com:0',
+    'https://example.com:65536',
+    'ftp://example.com',
+    'https://user@example.com',
+    'https://example.com\\path'
+  ]) assert.strictEqual(normalizeDomain(bad), null, bad)
+})
+
 test('strict SPF and DMARC reject', () => {
   const r = gradeEmailSecurity([['v=spf1 include:_spf.google.com -all']], [['v=DMARC1; p=reject; rua=mailto:d@example.com']])
   assert.deepStrictEqual(r.notes, ['✅ SPF sıkı (-all)', '✅ DMARC p=reject'])

@@ -3,9 +3,15 @@ const { domainToASCII } = require('node:url')
 // "https://Example.com/path" -> "example.com"; returns null for anything that isn't a hostname
 // Internationalized names ("örnek.com.tr") are converted to punycode ("xn--rnek-zoa.com.tr") first.
 function normalizeDomain(input){
-    const raw=String(input||"").trim().toLowerCase()
-        .replace(/^[a-z]+:\/\//,"").split(/[/?#]/)[0].replace(/:\d+$/,"").replace(/\.$/,"")
-    const d=domainToASCII(raw)
+    const raw=String(input||"").trim()
+    if(/[\\\s\x00-\x1f]/.test(raw)) return null
+    let url
+    try { url=new URL(raw.includes("://")?raw:`https://${raw}`) }
+    catch { return null }
+    if(!["http:","https:"].includes(url.protocol)||url.username||url.password) return null
+    // URL rejects malformed and out-of-range ports; port zero is syntactically valid but unusable.
+    if(url.port!==""&&Number(url.port)===0) return null
+    const d=domainToASCII(url.hostname.replace(/\.$/,""))
     return /^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z]{2,63}|xn--[a-z0-9](?:[a-z0-9-]{0,57}[a-z0-9])?)$/.test(d) ? d : null
 }
 
