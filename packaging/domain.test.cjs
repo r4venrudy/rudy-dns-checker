@@ -178,3 +178,17 @@ test('effectiveCaa climbs to the closest parent with records', async () => {
   const none = await effectiveCaa('other.test', async () => [])
   assert.match(formatCaa('other.test', none), /CAA yok/)
 })
+
+test('effectiveCaa stops when a DNS lookup fails instead of inheriting a parent record', async () => {
+  const lookup = async name => name === 'www.shop.example.com' ? null : [{ critical: 0, issue: 'letsencrypt.org' }]
+  const result = await effectiveCaa('www.shop.example.com', lookup)
+  assert.strictEqual(result.name, 'www.shop.example.com')
+  assert.strictEqual(result.lookupFailed, true)
+  assert.match(formatCaa('www.shop.example.com', result), /CAA sorgusu başarısız oldu/)
+})
+
+test('effectiveCaa treats an empty DNS response as a reason to continue climbing', async () => {
+  const result = await effectiveCaa('www.shop.example.com', async name => name === 'www.shop.example.com' || name === 'shop.example.com' ? [] : [{ critical: 0, issue: 'letsencrypt.org' }])
+  assert.strictEqual(result.name, 'example.com')
+  assert.strictEqual(result.lookupFailed, undefined)
+})

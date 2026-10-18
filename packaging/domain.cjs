@@ -149,13 +149,17 @@ async function effectiveCaa(domain,lookup){
     const labels=domain.split(".")
     for(let i=0;i<labels.length-1;i++){
         const name=labels.slice(i).join(".")
-        const records=await lookup(name)
+        let records
+        try{ records=await lookup(name) }
+        catch{ return { name, records:[], lookupFailed:true } }
+        if(records===null) return { name, records:[], lookupFailed:true }
         if(records.length) return { name, records }
     }
     return { name:null, records:[] }
 }
 
 function formatCaa(domain,caa){
+    if(caa.lookupFailed) return `⚠️ ${caa.name} için CAA sorgusu başarısız oldu; geçerli politika belirlenemedi`
     if(!caa.records.length) return "ℹ️ CAA yok: herhangi bir sertifika otoritesi bu ad için sertifika verebilir"
     const lines=caa.records.map(r=>`${r.critical?"!":""}${Object.entries(r).filter(([k])=>k!=="critical").map(([k,v])=>`${k} ${v}`).join(" ")}`)
     return codeBlock(lines)+(caa.name!==domain ? `\n↳ ${caa.name} kayıtları geçerli` : "")

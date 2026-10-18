@@ -154,7 +154,12 @@ async function handleDomain(interaction){
         safeResolve(domain,"MX"),
         safeResolve(domain,"TXT"),
         safeResolve(domain,"CNAME"),
-        domainHelpers.effectiveCaa(domain,name=>safeResolve(name,"CAA")),
+        // An empty answer means no CAA RRset; resolver errors must stay unknown rather than
+        // allowing the walk to inherit a parent policy that may not apply.
+        domainHelpers.effectiveCaa(domain,async name=>{
+            try{ return await dns.resolve(name,"CAA") }
+            catch(err){ return ["ENODATA","ENOTFOUND"].includes(err?.code) ? [] : null }
+        }),
         safeResolve(domain,"SOA"),
         safeResolve(`_dmarc.${domain}`,"TXT"),
         Promise.all(DKIM_SELECTORS.map(async selector=>({ selector, txt:await safeResolve(`${selector}._domainkey.${domain}`,"TXT") }))),
