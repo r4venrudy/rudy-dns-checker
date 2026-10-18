@@ -37,11 +37,13 @@ import whoisHelpers from './packaging/whois-summary.cjs'
 import domainHelpers from './packaging/domain.cjs'
 import cooldownHelpers from './packaging/cooldown.cjs'
 import privacyHelpers from './packaging/privacy.cjs'
+import concurrencyHelpers from './packaging/concurrency.cjs'
 const { danglingCnameNote, inlineCode, normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, mailTransportNotes, DKIM_SELECTORS, summarizeDkim } = domainHelpers
 const config = runtimeConfig.loadConfig({ token: 'DISCORD_TOKEN', clientId: 'CLIENT_ID' })
 if (process.argv.includes('--check-config')) { console.log('Configuration and dependencies ready'); process.exit(0) }
 
 const cooldown=cooldownHelpers.createCooldown(cooldownHelpers.secondsFromEnv(process.env.COOLDOWN_SECONDS,10)*1000)
+const lookupSlots=concurrencyHelpers.createSlots(4)
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds]
@@ -115,6 +117,13 @@ async function handleDomain(interaction){
         await interaction.reply({ content:"❌ Geçerli bir domain girin (örnek: example.com)", ephemeral:true })
         return
     }
+    const releaseSlot=lookupSlots.tryAcquire()
+    if(!releaseSlot){
+        await interaction.reply({ content:"⏳ Şu anda dört sorgu çalışıyor. Lütfen kısa süre sonra tekrar deneyin.", ephemeral:true })
+        return
+    }
+
+    try{
     const wait=cooldown.take(interaction.user.id)
     if(wait>0){
         await interaction.reply({ content:`⏳ Bir sonraki sorgu için ${Math.ceil(wait/1000)} sn bekleyin.`, ephemeral:true })
@@ -122,8 +131,6 @@ async function handleDomain(interaction){
     }
     // a lookup can reveal what someone is investigating, so let them keep it to themselves
     await interaction.deferReply({ ephemeral:privacyHelpers.privateByDefault(interaction.options.getBoolean("gizli")) })
-
-    try{
     const [
         A,
         AAAA,
@@ -203,6 +210,8 @@ async function handleDomain(interaction){
     }catch(err){
         console.error(`/domain ${domain} failed:`,err)
         await interaction.editReply("❌ Sorgu sırasında bir hata oluştu, lütfen tekrar deneyin.").catch(()=>{})
+    }finally{
+        releaseSlot()
     }
 }
 
