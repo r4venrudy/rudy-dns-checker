@@ -69,7 +69,7 @@ A successful check prints `Configuration and dependencies ready` and exits. It c
 node --env-file=.env index.js
 ```
 
-Invite the bot with `bot` and `applications.commands` scopes, then run `/domain example.com`; add `gizli:True` to get a result only you can see.
+Invite the bot with `bot` and `applications.commands` scopes, then run `/domain example.com`. Results are private by default; set `gizli:False` only when you want to share the DNS and registration details with the channel.
 
 Existing local `config.json` files remain supported with `token` and `clientId` keys. Exported environment variables take priority over the JSON values; `RUDY_CONFIG` selects another JSON file. Do not commit either credential file.
 
@@ -80,7 +80,7 @@ For an offline configuration regression check, run `npm test`. No real token or 
 - The actual slash command is `/domain`; this is a domain/DNS bot rather than an IP lookup bot.
 - SPF and DMARC checks are lightweight string heuristics. They do not recursively evaluate SPF includes, validate DKIM keys or the DNSSEC chain, or certify mail delivery.
 - WHOIS response shape varies; registrar and date fields can be unavailable. Long answers are shortened so the embed stays under Discord's 6000 character limit.
-- Run from the repository root because configuration and asset paths use the working directory. Replies are channel-visible; API availability and Discord setup require live validation.
+- Run from the repository root because configuration and asset paths use the working directory. Replies are private by default; API availability and Discord setup require live validation.
 
 ## Project map
 

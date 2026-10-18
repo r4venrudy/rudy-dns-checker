@@ -36,6 +36,7 @@ import runtimeConfig from './packaging/config.cjs'
 import whoisHelpers from './packaging/whois-summary.cjs'
 import domainHelpers from './packaging/domain.cjs'
 import cooldownHelpers from './packaging/cooldown.cjs'
+import privacyHelpers from './packaging/privacy.cjs'
 const { danglingCnameNote, inlineCode, normalizeDomain, joinTxt, gradeEmailSecurity, codeBlock, fitFields, formatMx, formatSoa, dnssecNote, mailTransportNotes, DKIM_SELECTORS, summarizeDkim } = domainHelpers
 const config = runtimeConfig.loadConfig({ token: 'DISCORD_TOKEN', clientId: 'CLIENT_ID' })
 if (process.argv.includes('--check-config')) { console.log('Configuration and dependencies ready'); process.exit(0) }
@@ -59,7 +60,7 @@ const commands = [
         )
         .addBooleanOption(o =>
             o.setName("gizli")
-             .setDescription("Sonucu yalnızca siz görün (varsayılan: herkes görür)")
+             .setDescription("Sonucu yalnızca siz görün (varsayılan); false seçerseniz kanalda paylaşılır")
         )
         .toJSON()
 ]
@@ -120,7 +121,7 @@ async function handleDomain(interaction){
         return
     }
     // a lookup can reveal what someone is investigating, so let them keep it to themselves
-    await interaction.deferReply({ ephemeral:interaction.options.getBoolean("gizli") ?? false })
+    await interaction.deferReply({ ephemeral:privacyHelpers.privateByDefault(interaction.options.getBoolean("gizli")) })
 
     try{
     const [
