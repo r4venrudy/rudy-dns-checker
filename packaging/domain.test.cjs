@@ -192,3 +192,13 @@ test('effectiveCaa treats an empty DNS response as a reason to continue climbing
   assert.strictEqual(result.name, 'example.com')
   assert.strictEqual(result.lookupFailed, undefined)
 })
+
+test('effectiveCaa checks the TLD before stopping short of the DNS root', async () => {
+  const queried = []
+  const result = await effectiveCaa('www.example.com', async name => {
+    queried.push(name)
+    return name === 'com' ? [{ critical: 0, issue: 'ca.example' }] : []
+  })
+  assert.deepStrictEqual(queried, ['www.example.com', 'example.com', 'com'])
+  assert.strictEqual(result.name, 'com')
+})

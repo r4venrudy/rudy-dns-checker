@@ -147,7 +147,8 @@ function mailTransportNotes(mtaStsTxt, tlsRptTxt, bimiTxt=[]){
 // records decides which CAs may issue. `lookup(name)` returns that name's CAA records.
 async function effectiveCaa(domain,lookup){
     const labels=domain.split(".")
-    for(let i=0;i<labels.length-1;i++){
+    // RFC 8659 tree-climbing includes the TLD and stops only before the DNS root.
+    for(let i=0;i<labels.length;i++){
         const name=labels.slice(i).join(".")
         let records
         try{ records=await lookup(name) }
